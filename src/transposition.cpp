@@ -1,3 +1,3 @@
 #include "transposition.h"
 
-HashEntry table[tableSize];
+HashEntry table[table_size];

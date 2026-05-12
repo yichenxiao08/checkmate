@@ -3,37 +3,37 @@
 
 u64 seed = 67;
 
-u64 squareRandoms[12][64];
-u64 sideKey;
-u64 castlingRandoms[16];
-u64 epFile[8];
+u64 square_randoms[12][64];
+u64 side_key;
+u64 castling_randoms[16];
+u64 ep_file[8];
 
-void generatePseudorandom()
+void generate_pseudorandom()
 {
   for (int i = 0; i < 12; i++)
   {
     for (int j = 0; j < 64; j++)
     {
-      squareRandoms[i][j] = next();
+      square_randoms[i][j] = next();
     }
   }
-  sideKey = next();
+  side_key = next();
   for (int i = 0; i < 16; i++)
   {
-    castlingRandoms[i] = next();
+    castling_randoms[i] = next();
   }
   for (int i = 0; i < 8; i++)
   {
-    epFile[i] = next();
+    ep_file[i] = next();
   }
 }
 
-u64 initHash(Board &b)
+u64 init_hash(Board &b)
 {
   static bool initialized = false;
   if (!initialized)
   {
-    generatePseudorandom();
+    generate_pseudorandom();
     initialized = true;
   }
   u64 hash = 0;
@@ -45,18 +45,18 @@ u64 initHash(Board &b)
       if (b.squares[index] != EMPTY)
       {
         Piece p = b.squares[index];
-        hash ^= squareRandoms[p][index];
+        hash ^= square_randoms[p][index];
       }
     }
   }
-  if (!b.whiteToMove)
-    hash ^= sideKey;
+  if (!b.white_to_move)
+    hash ^= side_key;
 
-  hash ^= castlingRandoms[b.castlingRights];
-  if (b.enPassantSquare != NO_SQUARE)
+  hash ^= castling_randoms[b.castling_rights];
+  if (b.en_passant_square != NO_SQUARE)
   {
-    int file = b.enPassantSquare % 8;
-    hash ^= epFile[file];
+    int file = b.en_passant_square % 8;
+    hash ^= ep_file[file];
   }
   return hash;
 }

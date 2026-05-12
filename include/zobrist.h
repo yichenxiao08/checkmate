@@ -13,11 +13,11 @@ inline u64 next()
   return z ^ (z >> 31);
 }
 
-extern u64 squareRandoms[12][64];
-extern u64 sideKey;
-extern u64 castlingRandoms[16];
-extern u64 epFile[8];
+extern u64 square_randoms[12][64];
+extern u64 side_key;
+extern u64 castling_randoms[16];
+extern u64 ep_file[8];
 
-void generatePseudorandom();
+void generate_pseudorandom();
 
-u64 initHash(Board &b);
+u64 init_hash(Board &b);

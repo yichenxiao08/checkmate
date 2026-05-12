@@ -3,63 +3,63 @@
 #include "bitboard_masks.h"
 #include "magics.h"
 
-void MoveGenerator::precomputeKnightAttacks()
+void MoveGenerator::precompute_knight_attacks()
 {
   for (int i = 0; i < 64; i++)
   {
-    u64 knightPos = 1ULL << i;
-    u64 nnE = (knightPos << 17) & notAFile;
-    u64 neE = (knightPos << 10) & notABFile;
-    u64 seE = (knightPos >> 6) & notABFile;
-    u64 ssE = (knightPos >> 15) & notAFile;
-    u64 ssW = (knightPos >> 17) & notHFile;
-    u64 swW = (knightPos >> 10) & notGHFile;
-    u64 nwW = (knightPos << 6) & notGHFile;
-    u64 nnW = (knightPos << 15) & notHFile;
-    u64 knightAttacks = nnE | neE | seE | ssE | ssW | swW | nwW | nnW;
-    knightAttackTable[i] = knightAttacks;
+    u64 knight_pos = 1ULL << i;
+    u64 nn_e = (knight_pos << 17) & not_a_file;
+    u64 ne_e = (knight_pos << 10) & not_ab_file;
+    u64 se_e = (knight_pos >> 6) & not_ab_file;
+    u64 ss_e = (knight_pos >> 15) & not_a_file;
+    u64 ss_w = (knight_pos >> 17) & not_h_file;
+    u64 sw_w = (knight_pos >> 10) & not_gh_file;
+    u64 nw_w = (knight_pos << 6) & not_gh_file;
+    u64 nn_w = (knight_pos << 15) & not_h_file;
+    u64 knight_attacks = nn_e | ne_e | se_e | ss_e | ss_w | sw_w | nw_w | nn_w;
+    knight_attack_table[i] = knight_attacks;
   }
 }
-void MoveGenerator::precomputeKingAttacks()
+void MoveGenerator::precompute_king_attacks()
 {
   for (int i = 0; i < 64; i++)
   {
-    u64 kingPos = 1ULL << i;
-    u64 ne = (kingPos << 9) & notAFile;
-    u64 e = (kingPos << 1) & notAFile;
-    u64 se = (kingPos >> 7) & notAFile;
-    u64 s = (kingPos >> 8);
-    u64 sw = (kingPos >> 9) & notHFile;
-    u64 w = (kingPos >> 1) & notHFile;
-    u64 nw = (kingPos << 7) & notHFile;
-    u64 n = (kingPos << 8);
-    u64 kingAttacks = ne | e | se | s | sw | w | nw | n;
-    kingAttackTable[i] = kingAttacks;
+    u64 king_pos = 1ULL << i;
+    u64 ne = (king_pos << 9) & not_a_file;
+    u64 e = (king_pos << 1) & not_a_file;
+    u64 se = (king_pos >> 7) & not_a_file;
+    u64 s = (king_pos >> 8);
+    u64 sw = (king_pos >> 9) & not_h_file;
+    u64 w = (king_pos >> 1) & not_h_file;
+    u64 nw = (king_pos << 7) & not_h_file;
+    u64 n = (king_pos << 8);
+    u64 king_attacks = ne | e | se | s | sw | w | nw | n;
+    king_attack_table[i] = king_attacks;
   }
 }
-void MoveGenerator::precomputeWhitePawnAttacks()
+void MoveGenerator::precompute_white_pawn_attacks()
 {
   for (int i = 8; i < 56; i++)
   {
-    u64 pawnPos = 1ULL << i;
-    u64 ne = (pawnPos << 9) & notAFile;
-    u64 nw = (pawnPos << 7) & notHFile;
-    u64 whitePawnAttacks = ne | nw;
-    whitePawnAttackTable[i] = whitePawnAttacks;
+    u64 pawn_pos = 1ULL << i;
+    u64 ne = (pawn_pos << 9) & not_a_file;
+    u64 nw = (pawn_pos << 7) & not_h_file;
+    u64 white_pawn_attacks = ne | nw;
+    white_pawn_attack_table[i] = white_pawn_attacks;
   }
 }
-void MoveGenerator::precomputeBlackPawnAttacks()
+void MoveGenerator::precompute_black_pawn_attacks()
 {
   for (int i = 8; i < 56; i++)
   {
-    u64 pawnPos = 1ULL << i;
-    u64 se = (pawnPos >> 7) & notAFile;
-    u64 sw = (pawnPos >> 9) & notHFile;
-    u64 blackPawnAttacks = se | sw;
-    blackPawnAttackTable[i] = blackPawnAttacks;
+    u64 pawn_pos = 1ULL << i;
+    u64 se = (pawn_pos >> 7) & not_a_file;
+    u64 sw = (pawn_pos >> 9) & not_h_file;
+    u64 black_pawn_attacks = se | sw;
+    black_pawn_attack_table[i] = black_pawn_attacks;
   }
 }
-void MoveGenerator::precomputeRookMasks()
+void MoveGenerator::precompute_rook_masks()
 {
   for (int i = 0; i < 64; i++)
   {
@@ -82,72 +82,72 @@ void MoveGenerator::precomputeRookMasks()
     {
       mask |= (1ULL << (i - j - 1));
     }
-    rookMasks[i] = mask;
+    rook_masks[i] = mask;
   }
 }
-void MoveGenerator::precomputeBishopMasks()
+void MoveGenerator::precompute_bishop_masks()
 {
   for (int i = 0; i < 64; i++)
   {
     int x = i % 8;
     int y = i / 8;
-    int neBound = std::min(7 - x - 1, 7 - y - 1);
-    int nwBound = std::min(x - 1, 7 - y - 1);
-    int seBound = std::min(7 - x - 1, y - 1);
-    int swBound = std::min(x - 1, y - 1);
+    int ne_bound = std::min(7 - x - 1, 7 - y - 1);
+    int nw_bound = std::min(x - 1, 7 - y - 1);
+    int se_bound = std::min(7 - x - 1, y - 1);
+    int sw_bound = std::min(x - 1, y - 1);
     u64 mask = 0ULL;
-    for (int j = 0; j < neBound; j++)
+    for (int j = 0; j < ne_bound; j++)
     {
       mask |= (1ULL << (i + 9 * (j + 1)));
     }
-    for (int j = 0; j < nwBound; j++)
+    for (int j = 0; j < nw_bound; j++)
     {
       mask |= (1ULL << (i + 7 * (j + 1)));
     }
-    for (int j = 0; j < seBound; j++)
+    for (int j = 0; j < se_bound; j++)
     {
       mask |= (1ULL << (i - 7 * (j + 1)));
     }
-    for (int j = 0; j < swBound; j++)
+    for (int j = 0; j < sw_bound; j++)
     {
       mask |= (1ULL << (i - 9 * (j + 1)));
     }
-    bishopMasks[i] = mask;
+    bishop_masks[i] = mask;
   }
 }
-void MoveGenerator::precomputeRookAttacks()
+void MoveGenerator::precompute_rook_attacks()
 {
-  precomputeRookMasks();
+  precompute_rook_masks();
   for (int i = 0; i < 64; i++)
   {
-    u64 mask = rookMasks[i];
+    u64 mask = rook_masks[i];
     u64 subset = 0;
     do
     {
-      u64 attacks = calculateRookAttacks(i, subset);
-      u64 index = (subset * rookMagic[i]) >> (64 - rookShifts[i]);
-      rookAttackTable[i][index] = attacks;
+      u64 attacks = calculate_rook_attacks(i, subset);
+      u64 index = (subset * rook_magic[i]) >> (64 - rook_shifts[i]);
+      rook_attack_table[i][index] = attacks;
       subset = (subset - mask) & mask;
     } while (subset != 0);
   }
 }
-void MoveGenerator::precomputeBishopAttacks()
+void MoveGenerator::precompute_bishop_attacks()
 {
-  precomputeBishopMasks();
+  precompute_bishop_masks();
   for (int i = 0; i < 64; i++)
   {
-    u64 mask = bishopMasks[i];
+    u64 mask = bishop_masks[i];
     u64 subset = 0;
     do
     {
-      u64 attacks = calculateBishopAttacks(i, subset);
-      u64 index = (subset * bishopMagic[i]) >> (64 - bishopShifts[i]);
-      bishopAttackTable[i][index] = attacks;
+      u64 attacks = calculate_bishop_attacks(i, subset);
+      u64 index = (subset * bishop_magic[i]) >> (64 - bishop_shifts[i]);
+      bishop_attack_table[i][index] = attacks;
       subset = (subset - mask) & mask;
     } while (subset != 0);
   }
 }
-u64 MoveGenerator::calculateRookAttacks(int sq, u64 blockers)
+u64 MoveGenerator::calculate_rook_attacks(int sq, u64 blockers)
 {
   u64 attacks = 0ULL;
   int file = sq % 8;
@@ -178,16 +178,16 @@ u64 MoveGenerator::calculateRookAttacks(int sq, u64 blockers)
   }
   return attacks;
 }
-u64 MoveGenerator::calculateBishopAttacks(int sq, u64 blockers)
+u64 MoveGenerator::calculate_bishop_attacks(int sq, u64 blockers)
 {
   u64 attacks = 0ULL;
   int file = sq % 8;
   int rank = sq / 8;
 
-  int neBound = std::min(7 - rank, 7 - file);
-  int nwBound = std::min(rank, 7 - file);
-  int seBound = std::min(7 - rank, file);
-  int swBound = std::min(rank, file);
+  int ne_bound = std::min(7 - rank, 7 - file);
+  int nw_bound = std::min(rank, 7 - file);
+  int se_bound = std::min(7 - rank, file);
+  int sw_bound = std::min(rank, file);
   u64 mask = 0ULL;
   for (int r = rank + 1, f = file + 1; r <= 7 && f <= 7; r++, f++)
   {
@@ -215,99 +215,99 @@ u64 MoveGenerator::calculateBishopAttacks(int sq, u64 blockers)
   }
   return attacks;
 }
-u64 MoveGenerator::getRookAttacks(int sq, Board &board)
+u64 MoveGenerator::get_rook_attacks(int sq, Board &board)
 {
-  u64 blockers = (board.whitePieces | board.blackPieces) & rookMasks[sq];
-  u64 index = (blockers * rookMagic[sq]) >> (64 - rookShifts[sq]);
-  u64 maxIndex = 1ULL << rookShifts[sq];
-  return rookAttackTable[sq][index];
+  u64 blockers = (board.white_pieces | board.black_pieces) & rook_masks[sq];
+  u64 index = (blockers * rook_magic[sq]) >> (64 - rook_shifts[sq]);
+  u64 max_index = 1ULL << rook_shifts[sq];
+  return rook_attack_table[sq][index];
 }
-u64 MoveGenerator::getBishopAttacks(int sq, Board &board)
+u64 MoveGenerator::get_bishop_attacks(int sq, Board &board)
 {
-  u64 blockers = (board.whitePieces | board.blackPieces) & bishopMasks[sq];
-  u64 index = (blockers * bishopMagic[sq]) >> (64 - bishopShifts[sq]);
-  return bishopAttackTable[sq][index];
+  u64 blockers = (board.white_pieces | board.black_pieces) & bishop_masks[sq];
+  u64 index = (blockers * bishop_magic[sq]) >> (64 - bishop_shifts[sq]);
+  return bishop_attack_table[sq][index];
 }
-u64 MoveGenerator::getQueenAttacks(int sq, Board &board)
+u64 MoveGenerator::get_queen_attacks(int sq, Board &board)
 {
-  return getRookAttacks(sq, board) | getBishopAttacks(sq, board);
+  return get_rook_attacks(sq, board) | get_bishop_attacks(sq, board);
 }
-bool MoveGenerator::isAttacked(Board &board, bool white, int sq)
+bool MoveGenerator::is_attacked(Board &board, bool white, int sq)
 {
   if (white)
   {
-    if (knightAttackTable[sq] & board.bitboards[bKnight])
+    if (knight_attack_table[sq] & board.bitboards[bKnight])
       return true;
-    if (kingAttackTable[sq] & board.bitboards[bKing])
+    if (king_attack_table[sq] & board.bitboards[bKing])
       return true;
     if (sq < 56)
     {
-      u64 potentialBlackPawns = ((1ULL << (sq + 7)) & notHFile) | ((1ULL << (sq + 9)) & notAFile);
-      if (board.bitboards[bPawn] & potentialBlackPawns)
+      u64 potential_black_pawns = ((1ULL << (sq + 7)) & not_h_file) | ((1ULL << (sq + 9)) & not_a_file);
+      if (board.bitboards[bPawn] & potential_black_pawns)
         return true;
     }
-    if (getRookAttacks(sq, board) & (board.bitboards[bRook] | board.bitboards[bQueen]))
+    if (get_rook_attacks(sq, board) & (board.bitboards[bRook] | board.bitboards[bQueen]))
       return true;
-    if (getBishopAttacks(sq, board) & (board.bitboards[bBishop] | board.bitboards[bQueen]))
+    if (get_bishop_attacks(sq, board) & (board.bitboards[bBishop] | board.bitboards[bQueen]))
       return true;
   }
   else
   {
-    if (knightAttackTable[sq] & board.bitboards[wKnight])
+    if (knight_attack_table[sq] & board.bitboards[wKnight])
       return true;
-    if (kingAttackTable[sq] & board.bitboards[wKing])
+    if (king_attack_table[sq] & board.bitboards[wKing])
       return true;
     if (sq >= 8)
     {
-      u64 potentialWhitePawns = ((1ULL << (sq - 7)) & notAFile) | ((1ULL << (sq - 9)) & notHFile);
-      if (board.bitboards[wPawn] & potentialWhitePawns)
+      u64 potential_white_pawns = ((1ULL << (sq - 7)) & not_a_file) | ((1ULL << (sq - 9)) & not_h_file);
+      if (board.bitboards[wPawn] & potential_white_pawns)
         return true;
     }
-    if (getRookAttacks(sq, board) & (board.bitboards[wRook] | board.bitboards[wQueen]))
+    if (get_rook_attacks(sq, board) & (board.bitboards[wRook] | board.bitboards[wQueen]))
       return true;
-    if (getBishopAttacks(sq, board) & (board.bitboards[wBishop] | board.bitboards[wQueen]))
+    if (get_bishop_attacks(sq, board) & (board.bitboards[wBishop] | board.bitboards[wQueen]))
       return true;
   }
   return false;
 }
-bool MoveGenerator::isInCheck(Board &board, bool white)
+bool MoveGenerator::is_in_check(Board &board, bool white)
 {
-  int kingSq = __builtin_ctzll(white ? board.bitboards[wKing] : board.bitboards[bKing]);
+  int king_sq = __builtin_ctzll(white ? board.bitboards[wKing] : board.bitboards[bKing]);
 
   if (white)
   {
-    if (knightAttackTable[kingSq] & board.bitboards[bKnight])
+    if (knight_attack_table[king_sq] & board.bitboards[bKnight])
       return true;
-    if (kingAttackTable[kingSq] & board.bitboards[bKing])
+    if (king_attack_table[king_sq] & board.bitboards[bKing])
       return true;
-    u64 potentialBlackPawns = 0;
-    if (kingSq < 56)
+    u64 potential_black_pawns = 0;
+    if (king_sq < 56)
     {
-      potentialBlackPawns |= ((1ULL << (kingSq + 7)) & notHFile) | ((1ULL << (kingSq + 9)) & notAFile);
-      if (board.bitboards[bPawn] & potentialBlackPawns)
+      potential_black_pawns |= ((1ULL << (king_sq + 7)) & not_h_file) | ((1ULL << (king_sq + 9)) & not_a_file);
+      if (board.bitboards[bPawn] & potential_black_pawns)
         return true;
     }
-    if (getRookAttacks(kingSq, board) & (board.bitboards[bRook] | board.bitboards[bQueen]))
+    if (get_rook_attacks(king_sq, board) & (board.bitboards[bRook] | board.bitboards[bQueen]))
       return true;
-    if (getBishopAttacks(kingSq, board) & (board.bitboards[bBishop] | board.bitboards[bQueen]))
+    if (get_bishop_attacks(king_sq, board) & (board.bitboards[bBishop] | board.bitboards[bQueen]))
       return true;
   }
   else
   {
-    if (knightAttackTable[kingSq] & board.bitboards[wKnight])
+    if (knight_attack_table[king_sq] & board.bitboards[wKnight])
       return true;
-    if (kingAttackTable[kingSq] & board.bitboards[wKing])
+    if (king_attack_table[king_sq] & board.bitboards[wKing])
       return true;
-    u64 potentialWhitePawns = 0;
-    if (kingSq >= 8)
+    u64 potential_white_pawns = 0;
+    if (king_sq >= 8)
     {
-      potentialWhitePawns |= ((1ULL << (kingSq - 7)) & notAFile) | ((1ULL << (kingSq - 9)) & notHFile);
-      if (board.bitboards[wPawn] & potentialWhitePawns)
+      potential_white_pawns |= ((1ULL << (king_sq - 7)) & not_a_file) | ((1ULL << (king_sq - 9)) & not_h_file);
+      if (board.bitboards[wPawn] & potential_white_pawns)
         return true;
     }
-    if (getRookAttacks(kingSq, board) & (board.bitboards[wRook] | board.bitboards[wQueen]))
+    if (get_rook_attacks(king_sq, board) & (board.bitboards[wRook] | board.bitboards[wQueen]))
       return true;
-    if (getBishopAttacks(kingSq, board) & (board.bitboards[wBishop] | board.bitboards[wQueen]))
+    if (get_bishop_attacks(king_sq, board) & (board.bitboards[wBishop] | board.bitboards[wQueen]))
       return true;
   }
   return false;

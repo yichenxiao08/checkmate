@@ -5,64 +5,73 @@
 #include <climits>
 #include <algorithm>
 
-int scoreMove(Board &board, Move m)
+Move killer_table[2][256];
+
+int score_move(Board &board, Move m, int ply)
 {
   if (board.squares[m.to] != EMPTY)
   {
 
     return mvv_lva(board.squares[m.from], board.squares[m.to]);
   }
+  if(board.is_same_move(m, killer_table[0][ply])){
+    return 90000;
+  }
+  if(board.is_same_move(m, killer_table[1][ply])){
+    return 80000;
+  }
   else
     return 0;
 }
-int mvv_lva(Piece attack, Piece victim) { return pieceVals[victim] - pieceVals[attack]; }
-int negamax(Board &board, MoveGenerator &moveGen, int alpha, int beta, int depth, int ply)
-{
-  int originalAlpha = alpha;
-  Move bestMove;
+int mvv_lva(Piece attack, Piece victim) { return piece_vals[victim] - piece_vals[attack]; }
 
-  int entryScore;
-  Move entryMove;
-  if (probeEntry(board.hash, depth, alpha, beta, ply, entryScore, entryMove))
+int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int depth, int ply)
+{
+  int original_alpha = alpha;
+  Move best_move;
+
+  int entry_score;
+  Move entry_move;
+  if (probe_entry(board.hash, depth, alpha, beta, ply, entry_score, entry_move))
   {
-    return entryScore;
+    return entry_score;
   }
   if (depth == 0)
-    return quiescence(board, moveGen, alpha, beta, ply);
-  int greatestValue = INT_MIN;
-  moveGen.generateMoves(board, ply);
+    return quiescence(board, move_gen, alpha, beta, ply);
+  int greatest_value = -INF;
+  move_gen.generate_moves(board, ply);
   int scores[218] = {0};
-  for (int i = 0; i < moveGen.moveLists[ply].count; i++)
+  for (int i = 0; i < move_gen.move_lists[ply].count; i++)
   {
-    if (board.isSameMove(moveGen.moveLists[ply].moves[i], entryMove)) scores[i] = INT_MAX;
+    if (board.is_same_move(move_gen.move_lists[ply].moves[i], entry_move)) scores[i] = INT_MAX;
     else
-      scores[i] = scoreMove(board, moveGen.moveLists[ply].moves[i]);
+      scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply);
   }
-  for (int i = 0; i < moveGen.moveLists[ply].count; i++)
+  for (int i = 0; i < move_gen.move_lists[ply].count; i++)
   {
     int best = i;
-    for (int j = i + 1; j < moveGen.moveLists[ply].count; j++)
+    for (int j = i + 1; j < move_gen.move_lists[ply].count; j++)
     {
-      if (scores[j] > scores[i])
+      if (scores[j] > scores[best])
       {
         best = j;
       }
-      std::swap(scores[i], scores[best]);
-      std::swap(moveGen.moveLists[ply].moves[i], moveGen.moveLists[ply].moves[best]);
     }
+    std::swap(scores[i], scores[best]);
+    std::swap(move_gen.move_lists[ply].moves[i], move_gen.move_lists[ply].moves[best]);
 
-    Move m = moveGen.moveLists[ply].moves[i];
-    board.makeMove(m);
-    if (moveGen.isInCheck(board, !board.isWhiteToMove()))
+    Move m = move_gen.move_lists[ply].moves[i];
+    board.make_move(m);
+    if (move_gen.is_in_check(board, !board.is_white_to_move()))
     {
-      board.unmakeMove(m);
+      board.unmake_move(m);
       continue;
     }
-    int score = -negamax(board, moveGen, -beta, -alpha, depth - 1, ply + 1);
-    if (score > greatestValue)
+    int score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1);
+    if (score > greatest_value)
     {
-      greatestValue = score;
-      bestMove = m;
+      greatest_value = score;
+      best_move = m;
       if (score > alpha)
       {
         alpha = score;
@@ -70,113 +79,117 @@ int negamax(Board &board, MoveGenerator &moveGen, int alpha, int beta, int depth
     }
     if (score >= beta)
     {
-      board.unmakeMove(m);
+      if(board.squares[m.to] == EMPTY){
+        killer_table[1][ply] = killer_table[0][ply];
+        killer_table[0][ply] = m;
+      }
+      board.unmake_move(m);
       break;
     }
-    board.unmakeMove(m);
+    board.unmake_move(m);
   }
-  if (greatestValue == INT_MIN)
+  if (greatest_value == INT_MIN)
   {
-    if (moveGen.isInCheck(board, board.isWhiteToMove()))
+    if (move_gen.is_in_check(board, board.is_white_to_move()))
     {
       return -MATE_THRESHOLD + ply;
     }
     else
       return 0;
   }
-  int nodeType;
-  if (greatestValue <= originalAlpha)
-    nodeType = UPPER;
-  else if (greatestValue >= beta)
-    nodeType = LOWER;
+  int node_type;
+  if (greatest_value <= original_alpha)
+    node_type = UPPER;
+  else if (greatest_value >= beta)
+    node_type = LOWER;
   else
-    nodeType = EXACT;
-  storeEntry(board.hash, greatestValue, depth, bestMove, nodeType, ply);
-  return greatestValue;
+    node_type = EXACT;
+  store_entry(board.hash, greatest_value, depth, best_move, node_type, ply);
+  return greatest_value;
 }
 
-Move rootNegamax(Board &board, MoveGenerator &moveGen, int depth)
+Move root_negamax(Board &board, MoveGenerator &move_gen, int depth)
 {
-  Move bestMove;
-  int bestScore = INT_MIN;
+  Move best_move;
+  int best_score = -INF;
 
-  moveGen.generateMoves(board, 0);
-  for (int i = 0; i < moveGen.moveLists[0].count; i++)
+  move_gen.generate_moves(board, 0);
+  for (int i = 0; i < move_gen.move_lists[0].count; i++)
   {
-    Move m = moveGen.moveLists[0].moves[i];
-    board.makeMove(m);
-    int score = -negamax(board, moveGen, INT_MIN, INT_MAX, depth - 1, 1);
-    board.unmakeMove(m);
+    Move m = move_gen.move_lists[0].moves[i];
+    board.make_move(m);
+    int score = -negamax(board, move_gen, -INF, INF, depth - 1, 1);
+    board.unmake_move(m);
 
-    if (score > bestScore)
+    if (score > best_score)
     {
-      bestScore = score;
-      bestMove = m;
+      best_score = score;
+      best_move = m;
     }
   }
-  return bestMove;
+  return best_move;
 }
 
-int quiescence(Board &board, MoveGenerator &moveGen, int alpha, int beta, int ply)
+int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int ply)
 {
-  bool isInCheck = moveGen.isInCheck(board, board.isWhiteToMove());
-  int greatestVal = INT_MIN;
-  if (!isInCheck)
+  bool is_in_check = move_gen.is_in_check(board, board.is_white_to_move());
+  int greatest_val = INT_MIN;
+  if (!is_in_check)
   {
-    int standPat = evaluate(board);
-    if (standPat > greatestVal)
-      greatestVal = standPat;
-    if (standPat > alpha)
-      alpha = standPat;
-    if (standPat >= beta)
-      return standPat;
+    int stand_pat = evaluate(board);
+    if (stand_pat > greatest_val)
+      greatest_val = stand_pat;
+    if (stand_pat > alpha)
+      alpha = stand_pat;
+    if (stand_pat >= beta)
+      return stand_pat;
   }
 
-  if (isInCheck)
+  if (is_in_check)
   {
-    moveGen.generateMoves(board, ply);
-    for (int i = 0; i < moveGen.moveLists[ply].count; i++)
+    move_gen.generate_moves(board, ply);
+    for (int i = 0; i < move_gen.move_lists[ply].count; i++)
     {
-      Move m = moveGen.moveLists[ply].moves[i];
-      board.makeMove(m);
-      if (moveGen.isInCheck(board, !board.isWhiteToMove()))
+      Move m = move_gen.move_lists[ply].moves[i];
+      board.make_move(m);
+      if (move_gen.is_in_check(board, !board.is_white_to_move()))
       {
-        board.unmakeMove(m);
+        board.unmake_move(m);
         continue;
       }
-      int score = -quiescence(board, moveGen, -beta, -alpha, ply + 1);
-      board.unmakeMove(m);
+      int score = -quiescence(board, move_gen, -beta, -alpha, ply + 1);
+      board.unmake_move(m);
       if (score >= beta)
         return score;
-      if (score > greatestVal)
-        greatestVal = score;
+      if (score > greatest_val)
+        greatest_val = score;
       if (score > alpha)
         alpha = score;
     }
   }
   else
   {
-    moveGen.generateCaptures(board, ply);
-    for (int i = 0; i < moveGen.moveLists[ply].count; i++)
+    move_gen.generate_captures(board, ply);
+    for (int i = 0; i < move_gen.move_lists[ply].count; i++)
     {
-      Move m = moveGen.moveLists[ply].moves[i];
-      board.makeMove(m);
-      if (moveGen.isInCheck(board, !board.isWhiteToMove()))
+      Move m = move_gen.move_lists[ply].moves[i];
+      board.make_move(m);
+      if (move_gen.is_in_check(board, !board.is_white_to_move()))
       {
-        board.unmakeMove(m);
+        board.unmake_move(m);
         continue;
       }
-      int score = -quiescence(board, moveGen, -beta, -alpha, ply + 1);
-      board.unmakeMove(m);
+      int score = -quiescence(board, move_gen, -beta, -alpha, ply + 1);
+      board.unmake_move(m);
       if (score >= beta)
         return score;
-      if (score > greatestVal)
-        greatestVal = score;
+      if (score > greatest_val)
+        greatest_val = score;
       if (score > alpha)
         alpha = score;
     }
   }
-  if (greatestVal == INT_MIN && isInCheck)
+  if (greatest_val == INT_MIN && is_in_check)
     return -MATE_THRESHOLD + ply;
-  return greatestVal;
+  return greatest_val;
 }

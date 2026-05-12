@@ -3,22 +3,22 @@
 #include "move.h"
 #include "search_constants.h"
 
-const int tableSize = 1 << 20;
+const int table_size = 1 << 20;
 
 struct HashEntry
 {
   u64 key;
   int score;
   int depth;
-  Move bestMove;
-  int nodeType;
+  Move best_move;
+  int node_type;
 };
 
-extern HashEntry table[tableSize];
+extern HashEntry table[table_size];
 
-inline void storeEntry(u64 hash, int score, int depth, Move bestMove, int nodeType, int ply)
+inline void store_entry(u64 hash, int score, int depth, Move best_move, int node_type, int ply)
 {
-  HashEntry &entry = table[hash & (tableSize - 1)];
+  HashEntry &entry = table[hash & (table_size - 1)];
 
   if (score > MATE_THRESHOLD - 10000)
   {
@@ -32,16 +32,16 @@ inline void storeEntry(u64 hash, int score, int depth, Move bestMove, int nodeTy
   entry.key = hash;
   entry.score = score;
   entry.depth = depth;
-  entry.bestMove = bestMove;
-  entry.nodeType = nodeType;
+  entry.best_move = best_move;
+  entry.node_type = node_type;
 }
 
-inline bool probeEntry(u64 hash, int depth, int alpha, int beta, int ply, int &score, Move &m)
+inline bool probe_entry(u64 hash, int depth, int alpha, int beta, int ply, int &score, Move &m)
 {
-  HashEntry &entry = table[hash & (tableSize - 1)];
+  HashEntry &entry = table[hash & (table_size - 1)];
   if (entry.key != hash)
     return false;
-  m = entry.bestMove;
+  m = entry.best_move;
   if (entry.depth >= depth)
   {
     int s = entry.score;
@@ -49,17 +49,17 @@ inline bool probeEntry(u64 hash, int depth, int alpha, int beta, int ply, int &s
       s -= ply;
     else if (s < -MATE_THRESHOLD + 10000)
       s += ply;
-    if (entry.nodeType == EXACT)
+    if (entry.node_type == EXACT)
     {
       score = s;
       return true;
     }
-    if (entry.nodeType == UPPER && score <= alpha)
+    if (entry.node_type == UPPER && score <= alpha)
     {
       score = s;
       return true;
     }
-    if (entry.nodeType == LOWER && score >= beta)
+    if (entry.node_type == LOWER && score >= beta)
     {
       score = s;
       return true;

@@ -9,35 +9,35 @@ class Board
 
 public:
   u64 bitboards[12];
-  u64 whitePieces;
-  u64 blackPieces;
-  u64 occupiedSquares;
-  bool whiteToMove;
-  int castlingRights;
-  int halfMoveCount;
-  int enPassantSquare;
+  u64 white_pieces;
+  u64 black_pieces;
+  u64 occupied_squares;
+  bool white_to_move;
+  int castling_rights;
+  int half_move_count;
+  int en_passant_square;
   u64 hash;
   Piece squares[64];
 
   Board();
-  void printBoard();
-  void makeMove(Move &m);
-  void updateHash(Move &m);
-  void setColorToMove(bool white)
+  void print_board();
+  void make_move(Move &m);
+  void update_hash(Move &m);
+  void set_color_to_move(bool white)
   {
-    whiteToMove = white;
+    white_to_move = white;
   }
-  bool isWhiteToMove() const { return whiteToMove; }
-  void unmakeMove(Move &m);
-  int getFile(int square) { return square % 8; }
-  int getRank(int square) { return square / 8; }
-  inline bool isSameMove(Move &a, Move &b)
+  bool is_white_to_move() const { return white_to_move; }
+  void unmake_move(Move &m);
+  int get_file(int square) { return square % 8; }
+  int get_rank(int square) { return square / 8; }
+  inline bool is_same_move(Move &a, Move &b)
   {
-    if (a.isCastling != b.isCastling)
+    if (a.is_castling != b.is_castling)
       return false;
-    if (a.isKingside != b.isKingside)
+    if (a.is_kingside != b.is_kingside)
       return false;
-    if (a.promotionPiece != b.promotionPiece)
+    if (a.promotion_piece != b.promotion_piece)
       return false;
     if (a.from != b.from)
       return false;
@@ -45,11 +45,11 @@ public:
       return false;
     return true;
   }
-  void updatePosition()
+  void update_position()
   {
-    whitePieces = bitboards[wPawn] | bitboards[wKnight] | bitboards[wBishop] | bitboards[wRook] | bitboards[wQueen] | bitboards[wKing];
-    blackPieces = bitboards[bPawn] | bitboards[bKnight] | bitboards[bBishop] | bitboards[bRook] | bitboards[bQueen] | bitboards[bKing];
-    occupiedSquares = whitePieces | blackPieces;
+    white_pieces = bitboards[wPawn] | bitboards[wKnight] | bitboards[wBishop] | bitboards[wRook] | bitboards[wQueen] | bitboards[wKing];
+    black_pieces = bitboards[bPawn] | bitboards[bKnight] | bitboards[bBishop] | bitboards[bRook] | bitboards[bQueen] | bitboards[bKing];
+    occupied_squares = white_pieces | black_pieces;
   }
-  u64 getOccupiedSquares() { return occupiedSquares; }
+  u64 get_occupied_squares() { return occupied_squares; }
 };

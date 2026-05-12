@@ -3,13 +3,13 @@
 
 MoveGenerator::MoveGenerator()
 {
-  rookAttackTable = new u64 *[64];
+  rook_attack_table = new u64 *[64];
   for (int i = 0; i < 64; i++)
-    rookAttackTable[i] = new u64[4096];
+    rook_attack_table[i] = new u64[4096];
 
-  bishopAttackTable = new u64 *[64];
+  bishop_attack_table = new u64 *[64];
   for (int i = 0; i < 64; i++)
-    bishopAttackTable[i] = new u64[512];
+    bishop_attack_table[i] = new u64[512];
 
   init();
 }
@@ -17,54 +17,54 @@ MoveGenerator::MoveGenerator()
 MoveGenerator::~MoveGenerator()
 {
   for (int i = 0; i < 64; i++)
-    delete[] rookAttackTable[i];
-  delete[] rookAttackTable;
+    delete[] rook_attack_table[i];
+  delete[] rook_attack_table;
 
   for (int i = 0; i < 64; i++)
-    delete[] bishopAttackTable[i];
-  delete[] bishopAttackTable;
+    delete[] bishop_attack_table[i];
+  delete[] bishop_attack_table;
 }
 
-void MoveGenerator::generateMoves(Board &board, int ply)
+void MoveGenerator::generate_moves(Board &board, int ply)
 {
-  currentPly = ply;
-  moveLists[ply].count = 0;
-  generateKnightMoves(board);
-  generateKingMoves(board);
-  generatePawnMoves(board);
-  generateRookMoves(board);
-  generateBishopMoves(board);
-  generateQueenMoves(board);
-  if (board.whiteToMove)
+  current_ply = ply;
+  move_lists[ply].count = 0;
+  generate_knight_moves(board);
+  generate_king_moves(board);
+  generate_pawn_moves(board);
+  generate_rook_moves(board);
+  generate_bishop_moves(board);
+  generate_queen_moves(board);
+  if (board.white_to_move)
   {
-    if ((board.castlingRights & wK) && !isAttacked(board, true, 4) && !isAttacked(board, true, 5) && !isAttacked(board, true, 6) && board.squares[5] == EMPTY && board.squares[6] == EMPTY)
+    if ((board.castling_rights & wK) && !is_attacked(board, true, 4) && !is_attacked(board, true, 5) && !is_attacked(board, true, 6) && board.squares[5] == EMPTY && board.squares[6] == EMPTY)
     {
-      addMove(Move(true, true));
+      add_move(Move(true, true));
     }
-    if ((board.castlingRights & wQ) && !isAttacked(board, true, 4) && !isAttacked(board, true, 3) && !isAttacked(board, true, 2) && board.squares[3] == EMPTY && board.squares[2] == EMPTY && board.squares[1] == EMPTY)
+    if ((board.castling_rights & wQ) && !is_attacked(board, true, 4) && !is_attacked(board, true, 3) && !is_attacked(board, true, 2) && board.squares[3] == EMPTY && board.squares[2] == EMPTY && board.squares[1] == EMPTY)
     {
-      addMove(Move(true, false));
+      add_move(Move(true, false));
     }
   }
   else
   {
-    if ((board.castlingRights & bK) && !isAttacked(board, false, 60) && !isAttacked(board, false, 61) && !isAttacked(board, false, 62) && board.squares[61] == EMPTY && board.squares[62] == EMPTY)
+    if ((board.castling_rights & bK) && !is_attacked(board, false, 60) && !is_attacked(board, false, 61) && !is_attacked(board, false, 62) && board.squares[61] == EMPTY && board.squares[62] == EMPTY)
     {
-      addMove(Move(true, true));
+      add_move(Move(true, true));
     }
-    if ((board.castlingRights & bQ) && !isAttacked(board, false, 60) && !isAttacked(board, false, 59) && !isAttacked(board, false, 58) && board.squares[59] == EMPTY && board.squares[58] == EMPTY && board.squares[57] == EMPTY)
+    if ((board.castling_rights & bQ) && !is_attacked(board, false, 60) && !is_attacked(board, false, 59) && !is_attacked(board, false, 58) && board.squares[59] == EMPTY && board.squares[58] == EMPTY && board.squares[57] == EMPTY)
     {
-      addMove(Move(true, false));
+      add_move(Move(true, false));
     }
   }
 }
-void MoveGenerator::generateCaptures(Board &board, int ply){
-  currentPly = ply;
-  moveLists[ply].count = 0;
-  generateKnightCaptures(board);
-  generateKingCaptures(board);
-  generatePawnCaptures(board);
-  generateRookCaptures(board);
-  generateBishopCaptures(board);
-  generateQueenCaptures(board);
+void MoveGenerator::generate_captures(Board &board, int ply){
+  current_ply = ply;
+  move_lists[ply].count = 0;
+  generate_knight_captures(board);
+  generate_king_captures(board);
+  generate_pawn_captures(board);
+  generate_rook_captures(board);
+  generate_bishop_captures(board);
+  generate_queen_captures(board);
 }

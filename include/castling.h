@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-const int castlingRightsMask[64] = {
+const int castling_rights_mask[64] = {
     ~wQ,
     15,
     15,

@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-const u64 rookMagic[64] = {
+const u64 rook_magic[64] = {
     u64(0x8a80104000800020),
     u64(0x140002000100040),
     u64(0x2801880a0017001),
@@ -68,7 +68,7 @@ const u64 rookMagic[64] = {
     u64(0x1004081002402),
 };
 
-const int rookShifts[64] = {
+const int rook_shifts[64] = {
     12,
     11,
     11,
@@ -135,7 +135,7 @@ const int rookShifts[64] = {
     12,
 };
 
-const u64 bishopMagic[64] = {
+const u64 bishop_magic[64] = {
     u64(0x40040844404084),
     u64(0x2004208a004208),
     u64(0x10190041080202),
@@ -202,7 +202,7 @@ const u64 bishopMagic[64] = {
     u64(0x4010011029020020),
 };
 
-const int bishopShifts[64] = {
+const int bishop_shifts[64] = {
     6,
     5,
     5,

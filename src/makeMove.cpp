@@ -2,35 +2,35 @@
 #include "castling.h"
 #include "zobrist.h"
 
-void Board::makeMove(Move &m)
+void Board::make_move(Move &m)
 {
-  m.prevState = Undo{hash, castlingRights, enPassantSquare, halfMoveCount, squares[m.to], whiteToMove};
+  m.prev_state = Undo{hash, castling_rights, en_passant_square, half_move_count, squares[m.to], white_to_move};
 
-  hash ^= castlingRandoms[castlingRights];
-  if (enPassantSquare != NO_SQUARE)
-    hash ^= epFile[enPassantSquare % 8];
+  hash ^= castling_randoms[castling_rights];
+  if (en_passant_square != NO_SQUARE)
+    hash ^= ep_file[en_passant_square % 8];
 
-  if (m.isCastling)
+  if (m.is_castling)
   {
-    if (m.isKingside && whiteToMove)
+    if (m.is_kingside && white_to_move)
     {
-      hash ^= squareRandoms[wKing][e1];
-      hash ^= squareRandoms[wRook][h1];
-      castlingRights &= ~(wK | wQ);
+      hash ^= square_randoms[wKing][e1];
+      hash ^= square_randoms[wRook][h1];
+      castling_rights &= ~(wK | wQ);
       bitboards[wKing] = (bitboards[wKing] & ~(1ULL << e1)) | (1ULL << g1);
       bitboards[wRook] = (bitboards[wRook] & ~(1ULL << h1)) | (1ULL << f1);
       squares[4] = EMPTY;
       squares[5] = wRook;
       squares[6] = wKing;
       squares[7] = EMPTY;
-      hash ^= squareRandoms[wKing][g1];
-      hash ^= squareRandoms[wRook][f1];
+      hash ^= square_randoms[wKing][g1];
+      hash ^= square_randoms[wRook][f1];
     }
-    else if (!m.isKingside && whiteToMove)
+    else if (!m.is_kingside && white_to_move)
     {
-      hash ^= squareRandoms[wKing][e1];
-      hash ^= squareRandoms[wRook][a1];
-      castlingRights &= ~(wK | wQ);
+      hash ^= square_randoms[wKing][e1];
+      hash ^= square_randoms[wRook][a1];
+      castling_rights &= ~(wK | wQ);
       bitboards[wKing] = (bitboards[wKing] & ~(1ULL << e1)) | (1ULL << c1);
       bitboards[wRook] = (bitboards[wRook] & ~(1ULL << a1)) | (1ULL << d1);
       squares[0] = EMPTY;
@@ -38,28 +38,28 @@ void Board::makeMove(Move &m)
       squares[2] = wKing;
       squares[3] = wRook;
       squares[4] = EMPTY;
-      hash ^= squareRandoms[wKing][c1];
-      hash ^= squareRandoms[wRook][d1];
+      hash ^= square_randoms[wKing][c1];
+      hash ^= square_randoms[wRook][d1];
     }
-    else if (m.isKingside && !whiteToMove)
+    else if (m.is_kingside && !white_to_move)
     {
-      hash ^= squareRandoms[bKing][e8];
-      hash ^= squareRandoms[bRook][h8];
-      castlingRights &= ~(bK | bQ);
+      hash ^= square_randoms[bKing][e8];
+      hash ^= square_randoms[bRook][h8];
+      castling_rights &= ~(bK | bQ);
       bitboards[bKing] = (bitboards[bKing] & ~(1ULL << e8)) | (1ULL << g8);
       bitboards[bRook] = (bitboards[bRook] & ~(1ULL << h8)) | (1ULL << f8);
       squares[60] = EMPTY;
       squares[61] = bRook;
       squares[62] = bKing;
       squares[63] = EMPTY;
-      hash ^= squareRandoms[bKing][g8];
-      hash ^= squareRandoms[bRook][f8];
+      hash ^= square_randoms[bKing][g8];
+      hash ^= square_randoms[bRook][f8];
     }
-    else if (!m.isKingside && !whiteToMove)
+    else if (!m.is_kingside && !white_to_move)
     {
-      hash ^= squareRandoms[bKing][e8];
-      hash ^= squareRandoms[bRook][a8];
-      castlingRights &= ~(bK | bQ);
+      hash ^= square_randoms[bKing][e8];
+      hash ^= square_randoms[bRook][a8];
+      castling_rights &= ~(bK | bQ);
       bitboards[bKing] = (bitboards[bKing] & ~(1ULL << e8)) | (1ULL << c8);
       bitboards[bRook] = (bitboards[bRook] & ~(1ULL << a8)) | (1ULL << d8);
       squares[56] = EMPTY;
@@ -67,96 +67,96 @@ void Board::makeMove(Move &m)
       squares[58] = bKing;
       squares[59] = bRook;
       squares[60] = EMPTY;
-      hash ^= squareRandoms[bKing][c8];
-      hash ^= squareRandoms[bRook][d8];
+      hash ^= square_randoms[bKing][c8];
+      hash ^= square_randoms[bRook][d8];
     }
   }
-  else if (m.isEnPassant)
+  else if (m.is_en_passant)
   {
-    m.prevState.capturedPiece = whiteToMove ? bPawn : wPawn;
-    Piece movingPawn = whiteToMove ? wPawn : bPawn;
-    Piece capturedPawn = whiteToMove ? bPawn : wPawn;
-    int capturedSq = whiteToMove ? m.to - 8 : m.to + 8;
+    m.prev_state.captured_piece = white_to_move ? bPawn : wPawn;
+    Piece moving_pawn = white_to_move ? wPawn : bPawn;
+    Piece captured_pawn = white_to_move ? bPawn : wPawn;
+    int captured_sq = white_to_move ? m.to - 8 : m.to + 8;
 
-    hash ^= squareRandoms[movingPawn][m.from];
-    hash ^= squareRandoms[capturedPawn][capturedSq];
+    hash ^= square_randoms[moving_pawn][m.from];
+    hash ^= square_randoms[captured_pawn][captured_sq];
 
     u64 from = 1ULL << m.from;
     u64 to = 1ULL << m.to;
-    u64 capturedSquare = whiteToMove ? 1ULL << (m.to - 8) : 1ULL << (m.to + 8);
+    u64 captured_square = white_to_move ? 1ULL << (m.to - 8) : 1ULL << (m.to + 8);
     squares[m.to] = squares[m.from];
     squares[m.from] = EMPTY;
-    if (whiteToMove)
+    if (white_to_move)
     {
       bitboards[wPawn] &= ~from;
       bitboards[wPawn] |= to;
-      bitboards[bPawn] &= ~capturedSquare;
+      bitboards[bPawn] &= ~captured_square;
       squares[m.to - 8] = EMPTY;
     }
     else
     {
       bitboards[bPawn] &= ~from;
       bitboards[bPawn] |= to;
-      bitboards[wPawn] &= ~capturedSquare;
+      bitboards[wPawn] &= ~captured_square;
       squares[m.to + 8] = EMPTY;
     }
 
-    hash ^= squareRandoms[movingPawn][m.to];
+    hash ^= square_randoms[moving_pawn][m.to];
   }
-  else if (m.promotionPiece != EMPTY)
+  else if (m.promotion_piece != EMPTY)
   {
-    Piece pawnColor = whiteToMove ? wPawn : bPawn;
-    Piece pieceFrom = squares[m.from];
-    Piece pieceTo = squares[m.to];
+    Piece pawn_color = white_to_move ? wPawn : bPawn;
+    Piece piece_from = squares[m.from];
+    Piece piece_to = squares[m.to];
     u64 from = 1ULL << m.from;
     u64 to = 1ull << m.to;
 
-    hash ^= squareRandoms[pawnColor][m.from];
-    if (pieceTo != EMPTY)
-      hash ^= squareRandoms[pieceTo][m.to];
+    hash ^= square_randoms[pawn_color][m.from];
+    if (piece_to != EMPTY)
+      hash ^= square_randoms[piece_to][m.to];
 
-    squares[m.to] = m.promotionPiece;
+    squares[m.to] = m.promotion_piece;
     squares[m.from] = EMPTY;
-    bitboards[m.promotionPiece] |= to;
-    bitboards[pawnColor] &= ~from;
-    if (pieceTo != EMPTY)
-      bitboards[pieceTo] &= ~to;
-    castlingRights &= castlingRightsMask[m.to];
+    bitboards[m.promotion_piece] |= to;
+    bitboards[pawn_color] &= ~from;
+    if (piece_to != EMPTY)
+      bitboards[piece_to] &= ~to;
+    castling_rights &= castling_rights_mask[m.to];
 
-    hash ^= squareRandoms[m.promotionPiece][m.to];
+    hash ^= square_randoms[m.promotion_piece][m.to];
   }
   else
   {
-    Piece pieceFrom = squares[m.from];
-    Piece pieceTo = squares[m.to];
+    Piece piece_from = squares[m.from];
+    Piece piece_to = squares[m.to];
     u64 from = 1ULL << m.from;
     u64 to = 1ULL << m.to;
 
-    hash ^= squareRandoms[pieceFrom][m.from];
-    if (pieceTo != EMPTY)
-      hash ^= squareRandoms[pieceTo][m.to];
+    hash ^= square_randoms[piece_from][m.from];
+    if (piece_to != EMPTY)
+      hash ^= square_randoms[piece_to][m.to];
 
     squares[m.to] = squares[m.from];
     squares[m.from] = EMPTY;
-    bitboards[pieceFrom] &= ~from;
-    bitboards[pieceFrom] |= to;
-    if (pieceTo != EMPTY)
-      bitboards[pieceTo] &= ~to;
-    castlingRights &= castlingRightsMask[m.from];
-    castlingRights &= castlingRightsMask[m.to];
+    bitboards[piece_from] &= ~from;
+    bitboards[piece_from] |= to;
+    if (piece_to != EMPTY)
+      bitboards[piece_to] &= ~to;
+    castling_rights &= castling_rights_mask[m.from];
+    castling_rights &= castling_rights_mask[m.to];
 
-    hash ^= squareRandoms[pieceFrom][m.to];
+    hash ^= square_randoms[piece_from][m.to];
   }
 
-  halfMoveCount++;
-  whiteToMove = !whiteToMove;
-  enPassantSquare = m.setEpSquare;
+  half_move_count++;
+  white_to_move = !white_to_move;
+  en_passant_square = m.set_ep_square;
 
-  hash ^= castlingRandoms[castlingRights];
-  if (enPassantSquare != NO_SQUARE)
-    hash ^= epFile[enPassantSquare % 8];
+  hash ^= castling_randoms[castling_rights];
+  if (en_passant_square != NO_SQUARE)
+    hash ^= ep_file[en_passant_square % 8];
 
-  hash ^= sideKey;
+  hash ^= side_key;
 
-  updatePosition();
+  update_position();
 }

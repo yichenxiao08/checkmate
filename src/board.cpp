@@ -5,8 +5,8 @@
 
 Board::Board()
 {
-  castlingRights = 15;
-  halfMoveCount = 0;
+  castling_rights = 15;
+  half_move_count = 0;
   Piece initial[64] = {
       // Rank 1
       wRook, wKnight, wBishop, wQueen, wKing, wBishop, wKnight, wRook,
@@ -47,15 +47,15 @@ Board::Board()
       bitboards[squares[i]] |= (1ULL << i);
     }
   }
-  updatePosition();
-  whiteToMove = true;
-  castlingRights = wK | wQ | bK | bQ;
-  halfMoveCount = 0;
-  enPassantSquare = NO_SQUARE;
-  hash = initHash(*this);
+  update_position();
+  white_to_move = true;
+  castling_rights = wK | wQ | bK | bQ;
+  half_move_count = 0;
+  en_passant_square = NO_SQUARE;
+  hash = init_hash(*this);
 }
 
-void Board::printBoard()
+void Board::print_board()
 {
   for (int i = 7; i >= 0; i--)
   {

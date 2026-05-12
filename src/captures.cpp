@@ -2,142 +2,142 @@
 #include "board.h"
 #include "bitboard_masks.h"
 
-void MoveGenerator::generateKnightCaptures(Board &board)
+void MoveGenerator::generate_knight_captures(Board &board)
 {
-  u64 knights = board.whiteToMove ? board.bitboards[wKnight] : board.bitboards[bKnight];
+  u64 knights = board.white_to_move ? board.bitboards[wKnight] : board.bitboards[bKnight];
   while (knights)
   {
-    int knightPos = __builtin_ctzll(knights);
-    u64 oppPieces = !board.whiteToMove ? board.whitePieces : board.blackPieces;
-    u64 moves = knightAttackTable[knightPos] & oppPieces;
+    int knight_pos = __builtin_ctzll(knights);
+    u64 opp_pieces = !board.white_to_move ? board.white_pieces : board.black_pieces;
+    u64 moves = knight_attack_table[knight_pos] & opp_pieces;
     while (moves)
     {
       int to = __builtin_ctzll(moves);
-      addMove(Move(knightPos, to));
+      add_move(Move(knight_pos, to));
       moves &= moves - 1;
     }
     knights &= knights - 1;
   }
 }
-void MoveGenerator::generateKingCaptures(Board &board)
+void MoveGenerator::generate_king_captures(Board &board)
 {
-  u64 king = board.whiteToMove ? board.bitboards[wKing] : board.bitboards[bKing];
+  u64 king = board.white_to_move ? board.bitboards[wKing] : board.bitboards[bKing];
   while (king)
   {
-    int kingPos = __builtin_ctzll(king);
-    u64 oppPieces = !board.whiteToMove ? board.whitePieces : board.blackPieces;
-    u64 moves = kingAttackTable[kingPos] & oppPieces;
+    int king_pos = __builtin_ctzll(king);
+    u64 opp_pieces = !board.white_to_move ? board.white_pieces : board.black_pieces;
+    u64 moves = king_attack_table[king_pos] & opp_pieces;
     while (moves)
     {
       int to = __builtin_ctzll(moves);
-      addMove(Move(kingPos, to));
+      add_move(Move(king_pos, to));
       moves &= moves - 1;
     }
     king &= king - 1;
   }
 }
-void MoveGenerator::generateRookCaptures(Board &board)
+void MoveGenerator::generate_rook_captures(Board &board)
 {
-  u64 rook = board.whiteToMove ? board.bitboards[wRook] : board.bitboards[bRook];
+  u64 rook = board.white_to_move ? board.bitboards[wRook] : board.bitboards[bRook];
   while (rook)
   {
-    int rookPos = __builtin_ctzll(rook);
-    u64 oppPieces = !board.whiteToMove ? board.whitePieces : board.blackPieces;
-    u64 moves = getRookAttacks(rookPos, board) & oppPieces;
+    int rook_pos = __builtin_ctzll(rook);
+    u64 opp_pieces = !board.white_to_move ? board.white_pieces : board.black_pieces;
+    u64 moves = get_rook_attacks(rook_pos, board) & opp_pieces;
     while (moves)
     {
       int to = __builtin_ctzll(moves);
-      addMove(Move(rookPos, to));
+      add_move(Move(rook_pos, to));
       moves &= moves - 1;
     }
     rook &= rook - 1;
   }
 }
-void MoveGenerator::generateBishopCaptures(Board &board)
+void MoveGenerator::generate_bishop_captures(Board &board)
 {
-  u64 bishop = board.whiteToMove ? board.bitboards[wBishop] : board.bitboards[bBishop];
+  u64 bishop = board.white_to_move ? board.bitboards[wBishop] : board.bitboards[bBishop];
   while (bishop)
   {
-    int bishopPos = __builtin_ctzll(bishop);
-    u64 oppPieces = !board.whiteToMove ? board.whitePieces : board.blackPieces;
-    u64 moves = getBishopAttacks(bishopPos, board) & oppPieces;
+    int bishop_pos = __builtin_ctzll(bishop);
+    u64 opp_pieces = !board.white_to_move ? board.white_pieces : board.black_pieces;
+    u64 moves = get_bishop_attacks(bishop_pos, board) & opp_pieces;
     while (moves)
     {
       int to = __builtin_ctzll(moves);
-      addMove(Move(bishopPos, to));
+      add_move(Move(bishop_pos, to));
       moves &= moves - 1;
     }
     bishop &= bishop - 1;
   }
 }
-void MoveGenerator::generateQueenCaptures(Board &board)
+void MoveGenerator::generate_queen_captures(Board &board)
 {
-  u64 queen = board.whiteToMove ? board.bitboards[wQueen] : board.bitboards[bQueen];
+  u64 queen = board.white_to_move ? board.bitboards[wQueen] : board.bitboards[bQueen];
   while (queen)
   {
-    int queenPos = __builtin_ctzll(queen);
-    u64 oppPieces = !board.whiteToMove ? board.whitePieces : board.blackPieces;
-    u64 moves = getQueenAttacks(queenPos, board) & oppPieces;
+    int queen_pos = __builtin_ctzll(queen);
+    u64 opp_pieces = !board.white_to_move ? board.white_pieces : board.black_pieces;
+    u64 moves = get_queen_attacks(queen_pos, board) & opp_pieces;
     while (moves)
     {
       int to = __builtin_ctzll(moves);
-      addMove(Move(queenPos, to));
+      add_move(Move(queen_pos, to));
       moves &= moves - 1;
     }
     queen &= queen - 1;
   }
 }
-void MoveGenerator::generatePawnCaptures(Board &board)
+void MoveGenerator::generate_pawn_captures(Board &board)
 {
-  u64 pawns = board.whiteToMove ? board.bitboards[wPawn] : board.bitboards[bPawn];
+  u64 pawns = board.white_to_move ? board.bitboards[wPawn] : board.bitboards[bPawn];
   while (pawns)
   {
-    int pawnPos = __builtin_ctzll(pawns);
-    u64 pawnPosBit = 1ULL << pawnPos;
-    bool isWhite = board.whiteToMove ? true : false;
-    u64 oppPieces = isWhite ? board.blackPieces : board.whitePieces;
-    u64 captures = isWhite ? whitePawnAttackTable[pawnPos] & oppPieces : blackPawnAttackTable[pawnPos] & oppPieces;
-    if (board.enPassantSquare != NO_SQUARE)
+    int pawn_pos = __builtin_ctzll(pawns);
+    u64 pawn_pos_bit = 1ULL << pawn_pos;
+    bool is_white = board.white_to_move ? true : false;
+    u64 opp_pieces = is_white ? board.black_pieces : board.white_pieces;
+    u64 captures = is_white ? white_pawn_attack_table[pawn_pos] & opp_pieces : black_pawn_attack_table[pawn_pos] & opp_pieces;
+    if (board.en_passant_square != NO_SQUARE)
     {
-      u64 ep = 1ULL << board.enPassantSquare;
-      if (isWhite)
+      u64 ep = 1ULL << board.en_passant_square;
+      if (is_white)
       {
-        ep &= whitePawnAttackTable[pawnPos];
+        ep &= white_pawn_attack_table[pawn_pos];
       }
       else
       {
-        ep &= blackPawnAttackTable[pawnPos];
+        ep &= black_pawn_attack_table[pawn_pos];
       }
       if (ep != 0ULL)
       {
         int to = __builtin_ctzll(ep);
-        addMove(Move(pawnPos, to, true));
+        add_move(Move(pawn_pos, to, true));
       }
     }
     while (captures)
     {
       int to = __builtin_ctzll(captures);
-      u64 toBit = 1ULL << to;
-      if (toBit & promotionRanks)
+      u64 to_bit = 1ULL << to;
+      if (to_bit & promotion_ranks)
       {
-        if (isWhite)
+        if (is_white)
         {
-          addMove(Move(pawnPos, to, wKnight));
-          addMove(Move(pawnPos, to, wBishop));
-          addMove(Move(pawnPos, to, wRook));
-          addMove(Move(pawnPos, to, wQueen));
+          add_move(Move(pawn_pos, to, wKnight));
+          add_move(Move(pawn_pos, to, wBishop));
+          add_move(Move(pawn_pos, to, wRook));
+          add_move(Move(pawn_pos, to, wQueen));
         }
         else
         {
-          addMove(Move(pawnPos, to, bKnight));
-          addMove(Move(pawnPos, to, bBishop));
-          addMove(Move(pawnPos, to, bRook));
-          addMove(Move(pawnPos, to, bQueen));
+          add_move(Move(pawn_pos, to, bKnight));
+          add_move(Move(pawn_pos, to, bBishop));
+          add_move(Move(pawn_pos, to, bRook));
+          add_move(Move(pawn_pos, to, bQueen));
         }
       }
       else
       {
-        addMove(Move(pawnPos, to));
+        add_move(Move(pawn_pos, to));
       }
       captures &= captures - 1;
     }

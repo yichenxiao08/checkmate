@@ -1,9 +1,9 @@
 #pragma once
 #include "board.h"
 
-const int pieceVals[] = {100, 300, 310, 500, 900, -1, 100, 300, 310, 500, 900, -1};
+const int piece_vals[] = {100, 300, 310, 500, 900, -1, 100, 300, 310, 500, 900, -1};
 
-inline int countPieces(Piece p, Board &board)
+inline int count_pieces(Piece p, Board &board)
 {
   int count = 0;
   u64 bitboard = board.bitboards[p];
@@ -15,11 +15,11 @@ inline int countPieces(Piece p, Board &board)
   return count;
 }
 
-int materialOdds(Board &board);
-int knightOdds(Board &board);
+int material_odds(Board &board);
+int knight_odds(Board &board);
 
 inline int evaluate(Board &board)
 {
-  int m = materialOdds(board);
-  return board.whiteToMove ? m : -m;
+  int m = material_odds(board);
+  return board.white_to_move ? m : -m;
 }
