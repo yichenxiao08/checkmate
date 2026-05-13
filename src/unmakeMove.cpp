@@ -89,7 +89,11 @@ void Board::unmake_move(Move &m)
   update_position();
 }
 
-void Board::unmake_null_move(){
+void Board::unmake_null_move(Undo &undo_null){
   half_move_count--;
-  hash ^= side_key;
+  white_to_move = !white_to_move;
+
+  en_passant_square = undo_null.en_passant_square;
+  castling_rights = undo_null.castling_rights;
+  hash = undo_null.hash;
 }

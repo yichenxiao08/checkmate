@@ -22,14 +22,14 @@ public:
   Board();
   void print_board();
   void make_move(Move &m);
-  void make_null_move();
+  void make_null_move(Undo &undo_null);
   inline void set_color_to_move(bool white)
   {
     white_to_move = white;
   }
   inline bool is_white_to_move() const { return white_to_move; }
   void unmake_move(Move &m);
-  void unmake_null_move();
+  void unmake_null_move(Undo &undo_null);
   int get_file(int square) { return square % 8; }
   int get_rank(int square) { return square / 8; }
   inline bool is_same_move(Move &a, Move &b)
@@ -53,4 +53,8 @@ public:
     occupied_squares = white_pieces | black_pieces;
   }
   inline u64 get_occupied_squares() { return occupied_squares; }
+  inline bool has_piece_material()
+  {
+    return bitboards[wKnight] | bitboards[wBishop] | bitboards[wRook] | bitboards[wQueen] | bitboards[bKnight] | bitboards[bBishop] | bitboards[bRook] | bitboards[bQueen];
+  }
 };

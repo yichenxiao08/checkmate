@@ -161,14 +161,19 @@ void Board::make_move(Move &m)
   update_position();
 }
 
-void Board::make_null_move()
+void Board::make_null_move(Undo &undo_null)
 {
+  undo_null.en_passant_square = en_passant_square;
+  undo_null.castling_rights = castling_rights;
+  undo_null.hash = hash;
+
+  if (en_passant_square != NO_SQUARE)
+  {
+    hash ^= ep_file[en_passant_square % 8];
+    en_passant_square = NO_SQUARE;
+  }
+
   half_move_count++;
   white_to_move = !white_to_move;
   hash ^= side_key;
-  if (en_passant_square != NO_SQUARE)
-  {
-    en_passant_square = NO_SQUARE;
-    hash ^= ep_file[en_passant_square % 8];
-  }
 }
