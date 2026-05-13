@@ -51,7 +51,7 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     static_eval = entry_eval;
   else
     static_eval = evaluate(board);
- 
+
   // base case
   if (depth == 0)
     return quiescence(board, move_gen, alpha, beta, ply, static_eval);
@@ -103,7 +103,28 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
       board.unmake_move(m);
       continue;
     }
-    int score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true);
+
+    bool move_is_check = move_gen.is_in_check(board, board.is_white_to_move());
+    bool move_is_capture = !(m.prev_state.captured_piece == EMPTY);
+
+    int score;
+
+    bool reducible = (i >= LMR_MIN_INDEX) && (depth >= LMR_MIN_DEPTH) && !move_is_check && !is_in_check && !move_is_capture && m.promotion_piece == EMPTY && !board.is_same_move(m, killer_table[0][ply]) && !board.is_same_move(m, killer_table[1][ply]);
+
+    if (reducible)
+    {
+      int R = 1;
+      score = -negamax(board, move_gen, -alpha - 1, -alpha, depth - 1 - R, ply + 1, true);
+      if (score > alpha)
+      {
+        score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true);
+      }
+    }
+    else
+    {
+      score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true);
+    }
+
     if (score > greatest_value)
     {
       greatest_value = score;
@@ -115,11 +136,11 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     }
     if (score >= beta)
     {
-      if (board.squares[m.to] == EMPTY)
+      if (!move_is_capture)
       {
         killer_table[1][ply] = killer_table[0][ply];
         killer_table[0][ply] = m;
-        history_table[board.squares[m.from]][m.to] += depth * depth;
+        history_table[board.squares[m.to]][m.to] += depth * depth;
       }
       board.unmake_move(m);
       break;
