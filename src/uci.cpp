@@ -34,6 +34,7 @@ void uci_loop(Board &board, MoveGenerator &mg)
     {
       reset_search();
       board.reset_board();
+      repetition_count = 0;
     }
     else if (header == "position")
     {
@@ -78,6 +79,7 @@ void position_handler(std::vector<std::string> str, Board &board)
   if (str.size() < 2)
     return;
   board.reset_board();
+  repetition_count = 0;
   std::string setup_type = str[1];
   int moves_index = -1;
   for (int i = 2; i < str.size(); i++)
@@ -105,6 +107,7 @@ void position_handler(std::vector<std::string> str, Board &board)
       }
     }
     fen_parser(str[2], str[3], str[4], str[5], ply, board);
+    repetition_table[repetition_count++] = board.hash;
     if (moves_index != -1)
     {
       for (int i = moves_index + 1; i < str.size(); i++)
@@ -116,6 +119,7 @@ void position_handler(std::vector<std::string> str, Board &board)
   }
   else
   {
+    repetition_table[repetition_count++] = board.hash;
     if (moves_index != -1)
     {
       for (int i = moves_index + 1; i < str.size(); i++)

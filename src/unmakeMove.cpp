@@ -1,8 +1,10 @@
 #include "board.h"
 #include "zobrist.h"
+#include "search.h"
 
 void Board::unmake_move(Move &m)
 {
+  repetition_count--;
   hash = m.prev_state.hash;
   castling_rights = m.prev_state.castling_rights;
   en_passant_square = m.prev_state.en_passant_square;
@@ -95,7 +97,8 @@ void Board::unmake_move(Move &m)
 }
 
 void Board::unmake_null_move(Undo &undo_null){
-  half_move_count--;
+  repetition_count--;
+  half_move_count = undo_null.half_move_count;
   white_to_move = !white_to_move;
 
   en_passant_square = undo_null.en_passant_square;

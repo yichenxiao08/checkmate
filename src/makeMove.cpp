@@ -1,6 +1,7 @@
 #include "board.h"
 #include "castling.h"
 #include "zobrist.h"
+#include "search.h"
 
 void Board::make_move(Move &m)
 {
@@ -177,7 +178,13 @@ void Board::make_move(Move &m)
     hash ^= square_randoms[piece_from][m.to];
   }
 
-  half_move_count++;
+  bool is_capture = m.prev_state.captured_piece != EMPTY;
+  bool is_pawn_move = m.is_en_passant || m.promotion_piece != EMPTY ||
+                      (!m.is_castling && (squares[m.to] == wPawn || squares[m.to] == bPawn));
+  if (is_capture || is_pawn_move)
+    half_move_count = 0;
+  else
+    half_move_count++;
   white_to_move = !white_to_move;
   en_passant_square = m.set_ep_square;
 
@@ -188,6 +195,7 @@ void Board::make_move(Move &m)
   hash ^= side_key;
 
   update_position();
+  repetition_table[repetition_count++] = hash;
 }
 
 void Board::make_null_move(Undo &undo_null)
@@ -195,6 +203,7 @@ void Board::make_null_move(Undo &undo_null)
   undo_null.en_passant_square = en_passant_square;
   undo_null.castling_rights = castling_rights;
   undo_null.hash = hash;
+  undo_null.half_move_count = half_move_count;
 
   if (en_passant_square != NO_SQUARE)
   {
@@ -202,7 +211,8 @@ void Board::make_null_move(Undo &undo_null)
     en_passant_square = NO_SQUARE;
   }
 
-  half_move_count++;
+  half_move_count = 0;
   white_to_move = !white_to_move;
   hash ^= side_key;
+  repetition_table[repetition_count++] = hash;
 }

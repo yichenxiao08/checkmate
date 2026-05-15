@@ -8,10 +8,23 @@
 
 extern Move killer_table[2][256];
 extern int history_table[12][64];
+extern u64 repetition_table[1024];
+extern int repetition_count;
 
 void reset_killer_table();
 void reset_history_table();
 void reset_tt();
+
+inline bool is_repetition(const Board &board)
+{
+  int stop = repetition_count - 1 - board.half_move_count;
+  if (stop < 0) stop = 0;
+  for (int i = repetition_count - 3; i >= stop; i -= 2)
+  {
+    if (repetition_table[i] == board.hash) return true;
+  }
+  return false;
+}
 
 inline void reset_search()
 {

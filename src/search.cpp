@@ -8,6 +8,8 @@
 
 Move killer_table[2][256];
 int history_table[12][64];
+u64 repetition_table[1024];
+int repetition_count = 0;
 
 void reset_killer_table()
 {
@@ -47,6 +49,7 @@ int mvv_lva(Piece attack, Piece victim) { return (piece_vals[victim] - piece_val
 int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int depth, int ply, bool can_null, std::atomic<bool> &stop_flag)
 {
   if(board.half_move_count >= 100) return 0;
+  if(ply > 0 && is_repetition(board)) return 0;
 
   int original_alpha = alpha;
   Move best_move;
@@ -123,6 +126,7 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
 
     Move m = move_gen.move_lists[ply].moves[i];
     board.make_move(m);
+    
     if (move_gen.is_in_check(board, !board.is_white_to_move()))
     {
       board.unmake_move(m);
