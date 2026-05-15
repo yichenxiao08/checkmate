@@ -24,6 +24,7 @@
         "src/transposition.cpp",
         "src/zobrist.cpp",
         "src/evaluation.cpp",
+        "src/uci.cpp",
         "-o",
         "${workspaceFolder}/app.exe"
       ],

@@ -2,8 +2,10 @@
 
 #include "moveGen.h"
 #include "board.h"
+#include "evaluation.h"
 #include "string"
 #include <iostream>
+#include <assert.h>
 std::string move_to_string(Move &m, Board &board)
 {
   if (m.is_castling)
@@ -49,6 +51,7 @@ u64 perft(Board &board, int depth, bool white, MoveGenerator &move_gen, int ply 
       //   std::cout << "\n"
       //             << move_to_string(m, board) << " " << current_nodes;
       nodes += current_nodes;
+      
     }
     board.unmake_move(m);
   }

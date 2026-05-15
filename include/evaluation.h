@@ -15,7 +15,7 @@ inline int count_pieces(Piece p, Board &board)
   return count;
 }
 
-void precompute_psqt(Board& board);
+void precompute_eval(Board& board);
 
 int evaluate_position(Board& board);
 

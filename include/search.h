@@ -11,6 +11,13 @@ void reset_killer_table();
 void reset_history_table();
 void reset_tt();
 
+inline void reset_search()
+{
+  reset_killer_table();
+  reset_history_table();
+  reset_tt();
+}
+
 Move root_negamax(Board &board, MoveGenerator &move_gen, int depth);
 
 int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int depth, int ply, bool can_null);

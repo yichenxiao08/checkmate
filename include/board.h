@@ -4,6 +4,7 @@
 #include "square.h"
 #include "move.h"
 #include "evalConstants.h"
+#include "zobrist.h"
 
 class Board
 {
@@ -34,7 +35,7 @@ public:
   void unmake_move(Move &m);
   void unmake_null_move(Undo &undo_null);
 
-  inline void Board::add_piece_eval(Piece p, int sq)
+  inline void add_piece_eval(Piece p, int sq)
   {
     bool isWhite = p < 6;
     int sign = isWhite ? 1 : -1;
@@ -46,7 +47,7 @@ public:
     phase += phase_weights[p];
   }
 
-  inline void Board::remove_piece_eval(Piece p, int sq)
+  inline void remove_piece_eval(Piece p, int sq)
   {
     bool isWhite = p < 6;
     int sign = isWhite ? 1 : -1;
@@ -73,12 +74,13 @@ public:
       return false;
     return true;
   }
-
+  void reset_board();
   inline void update_position()
   {
     white_pieces = bitboards[wPawn] | bitboards[wKnight] | bitboards[wBishop] | bitboards[wRook] | bitboards[wQueen] | bitboards[wKing];
     black_pieces = bitboards[bPawn] | bitboards[bKnight] | bitboards[bBishop] | bitboards[bRook] | bitboards[bQueen] | bitboards[bKing];
     occupied_squares = white_pieces | black_pieces;
+    hash = init_hash(*this);
   }
   inline bool has_piece_material()
   {

@@ -1,11 +1,9 @@
 #include "board.h"
 #include "evaluation.h"
-#include "zobrist.h"
 #include <iostream>
 #include <assert.h>
 
-Board::Board()
-{
+void Board::reset_board(){
   castling_rights = 15;
   half_move_count = 0;
   Piece initial[64] = {
@@ -53,14 +51,18 @@ Board::Board()
   castling_rights = wK | wQ | bK | bQ;
   half_move_count = 0;
   en_passant_square = NO_SQUARE;
-  hash = init_hash(*this);
 
   opening_material = 0;
   end_material = 0;
   opening_psqt = 0;
   end_psqt = 0;
   phase = 0;
-  precompute_psqt(*this);
+  precompute_eval(*this);
+}
+
+Board::Board()
+{
+  reset_board();
 }
 
 void Board::print_board()

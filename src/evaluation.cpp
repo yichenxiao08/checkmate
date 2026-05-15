@@ -1,8 +1,13 @@
 #include "evaluation.h"
 #include <algorithm>
 
-void precompute_psqt(Board &board)
+void precompute_eval(Board &board)
 {
+  board.opening_material = 0;
+  board.end_material = 0;
+  board.opening_psqt = 0;
+  board.end_psqt = 0;
+  board.phase = 0;
   for (int i = 0; i < 64; i++)
   {
     Piece p = board.squares[i];
