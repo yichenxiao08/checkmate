@@ -2,6 +2,7 @@
 #include <algorithm>
 
 const int passed_pawn_bonuses[] = {0, 15, 15, 25, 40, 60, 90};
+const int isolated_pawn_maluses[] = {0, -10, -25, -50, -80, -85, -90, -95, -100};
 
 void precompute_eval(Board &board)
 {
@@ -35,7 +36,8 @@ int evaluate_position(Board &board)
 
   int eval = ((opening_eval * phase + end_eval * (24 - phase)) / 24) + TEMPO_BONUS;
   
-  eval += evaluate_passed_pawns(board);
+  eval += 0.5 * evaluate_passed_pawns(board);
+  eval += evaluate_isolated_pawns(board);
   
   if (!board.is_white_to_move())
     eval *= -1;
@@ -46,12 +48,35 @@ int evaluate_position(Board &board)
 u64 compute_passed_pawn_mask(Board &board, int sq, bool white)
 {
   u64 ranks_ahead = white ? ~0ULL << ((sq / 8 + 1) * 8) : ~0ULL >> (64 - (sq / 8 - 1) * 8);
-  int file = sq % 8;
-  u64 a_file = 0x1010101010101010;
-  u64 file_on = a_file << file;
-  u64 file_left = a_file << std::max(0, file - 1);
-  u64 file_right = a_file << std::min(7, file + 1);
-  return ranks_ahead && file_on && file_left && file_right;
+  return ranks_ahead && compute_neighboring_files(sq);
+}
+
+int evaluate_isolated_pawns(Board &board){
+  u64 white = board.bitboards[wPawn];
+  u64 black = board.bitboards[bPawn];
+  int total_w = 0;
+  int total_b = 0;
+  while (white)
+  {
+    int pawn = __builtin_ctzll(white);
+    u64 mask = compute_neighboring_files(pawn);
+    if (mask && ~white)
+    {
+      total_w++;
+    }
+    white &= white - 1;
+  }
+  while (black)
+  {
+    int pawn = __builtin_ctzll(black);
+    u64 mask = compute_neighboring_files(pawn);
+    if (mask && ~white)
+    {
+      total_b++;
+    }
+    black &= black - 1;
+  }
+  return isolated_pawn_maluses[total_w] - isolated_pawn_maluses[total_b];
 }
 
 int evaluate_passed_pawns(Board &board)
