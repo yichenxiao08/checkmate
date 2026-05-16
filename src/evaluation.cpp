@@ -46,8 +46,10 @@ int evaluate_position(Board &board)
 
 u64 compute_passed_pawn_mask(Board &board, int sq, bool white)
 {
-  u64 ranks_ahead = white ? ~0ULL << ((sq / 8 + 1) * 8) : ~0ULL >> (64 - (sq / 8 - 1) * 8);
-  return ranks_ahead && compute_neighboring_files(sq);
+  u64 a_file = 0x0101010101010101;
+  u64 file_on = a_file << (sq % 8);
+  u64 ranks_ahead = white ? ~0ULL << ((sq / 8 + 1) * 8) : ~0ULL >> (64 - (sq / 8) * 8);
+  return ranks_ahead & (compute_neighboring_files(sq) | file_on);
 }
 
 int evaluate_pawn_struct(Board &board){
@@ -62,19 +64,19 @@ int evaluate_pawn_struct(Board &board){
   {
     int pawn = __builtin_ctzll(white);
     u64 neighbors = compute_neighboring_files(pawn);
-    if (neighbors && ~white)
+    if ((neighbors & white) == 0)
     {
       total_w_isolated++;
     }
     white &= white - 1;
     u64 passed_mask = compute_passed_pawn_mask(board, pawn, true);
-    if (passed_mask && ~black)
+    if ((passed_mask & black) == 0)
     {
       passed_eval += passed_pawn_bonuses[pawn / 8];
     }
-    u64 file = 0x1010101010101010 << (pawn % 8);
-    u64 file_without_pawn = file && ~(1ULL << pawn);
-    if(file_without_pawn && white) {
+    u64 file = 0x0101010101010101 << (pawn % 8);
+    u64 file_without_pawn = file & ~(1ULL << pawn);
+    if(file_without_pawn & white) {
       doubled++;
     }
   }
@@ -82,25 +84,25 @@ int evaluate_pawn_struct(Board &board){
   {
     int pawn = __builtin_ctzll(black);
     u64 neighbors = compute_neighboring_files(pawn);
-    if (neighbors && ~white)
+    if ((neighbors & black) == 0)
     {
       total_b_isolated++;
     }
     u64 passed_mask = compute_passed_pawn_mask(board, pawn, false);
-    if (passed_mask && ~white)
+    if ((passed_mask & white) == 0)
     {
       passed_eval -= passed_pawn_bonuses[7 - pawn / 8];
     }
     black &= black - 1;
-    u64 file = 0x1010101010101010 << (pawn % 8);
-    u64 file_without_pawn = file && ~(1ULL << pawn);
-    if (file_without_pawn && black)
+    u64 file = 0x0101010101010101 << (pawn % 8);
+    u64 file_without_pawn = file & ~(1ULL << pawn);
+    if (file_without_pawn & black)
     {
       doubled--;
     }
   }
   eval += (isolated_pawn_maluses[total_w_isolated] - isolated_pawn_maluses[total_b_isolated]);
-  eval += 0.5 * passed_eval;
-  eval -= doubled * 20;
+  eval += passed_eval / 2;
+  eval -= doubled * 10;
   return eval;
 }
