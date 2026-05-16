@@ -19,3 +19,6 @@ void precompute_eval(Board& board);
 
 int evaluate_position(Board& board);
 
+u64 compute_passed_pawn_mask(Board& board, int sq, bool white);
+
+int evaluate_passed_pawns(Board &board);
