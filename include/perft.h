@@ -28,6 +28,12 @@ std::string move_to_string(Move &m, Board &board)
   result += (char)('1' + (m.from / 8));
   result += (char)('a' + (m.to % 8));
   result += (char)('1' + (m.to / 8));
+  if(m.promotion_piece != EMPTY){
+    if(m.promotion_piece % 6 == 1) result += 'n';
+    if(m.promotion_piece % 6 == 2) result += 'b';
+    if(m.promotion_piece % 6 == 3) result += 'r';
+    if(m.promotion_piece % 6 == 4) result += 'q';
+  }
   return result;
 }
 

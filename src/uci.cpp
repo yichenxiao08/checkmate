@@ -214,13 +214,18 @@ void go_handler(std::vector<std::string> str, std::atomic<bool> &stop_flag, std:
     opp_inc = winc;
   }
 
-  int time_allotted = player_time / 30 + player_inc / 2;
+  constexpr int MOVE_OVERHEAD = 50;
+  int safe_time = std::max(1, player_time - MOVE_OVERHEAD);
+  int base = safe_time / 40 + player_inc * 3 / 4;
+  int soft_limit = std::max(1, std::min(base, safe_time / 8));
+  int hard_limit = std::max(soft_limit, std::min(base * 3, safe_time / 4));
+
   auto start = std::chrono::steady_clock::now();
-  search = std::thread([&, depth, start, time_allotted]()
+  search = std::thread([&, depth, start, soft_limit, hard_limit]()
                        {
-    std::thread timer([&, time_allotted]() {
+    std::thread timer([&, hard_limit]() {
       auto deadline = std::chrono::steady_clock::now()
-                    + std::chrono::milliseconds(time_allotted);
+                    + std::chrono::milliseconds(hard_limit);
       while (!stop_flag.load(std::memory_order_relaxed) &&
              std::chrono::steady_clock::now() < deadline) {
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
@@ -229,9 +234,10 @@ void go_handler(std::vector<std::string> str, std::atomic<bool> &stop_flag, std:
     });
 
     int depth_searched = 0;
-    Move best = iterative_deepening(board, mg, depth, stop_flag, depth_searched, start, time_allotted);
+    Move best = iterative_deepening(board, mg, depth, stop_flag, depth_searched, start, soft_limit);
     stop_flag.store(true);
     timer.join();
-    std::cout << "bestmove " << move_to_string(best, board) << "\n";
-    std::cout << "depth searched " << depth_searched << "\n"; });
+    std::cout << "bestmove " << move_to_string(best, board) << std::endl;
+    // std::cout << "depth searched " << depth_searched << "\n";
+  });
 }

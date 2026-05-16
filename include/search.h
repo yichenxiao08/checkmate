@@ -43,7 +43,7 @@ int mvv_lva(Piece attack, Piece victim);
 
 int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int ply, int static_eval, int depth, std::atomic<bool> &stop_flag);
 
-inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_depth, std::atomic<bool> &stop_flag, int &depth_search, std::chrono::steady_clock::time_point start, int time_allotted)
+inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_depth, std::atomic<bool> &stop_flag, int &depth_search, std::chrono::steady_clock::time_point start, int soft_limit)
 {
   Move best_move;
   for (int i = 1; i <= max_depth; i++)
@@ -54,8 +54,9 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
       best_move = m;
       depth_search = i;
     }
-    auto time = std::chrono::steady_clock::now();
-    if((std::chrono::duration_cast<std::chrono::milliseconds>(time - start).count() * 10) > 6 * time_allotted){
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - start).count();
+    if (elapsed >= soft_limit){
       break;
     }
     for (int p = 0; p < 12; p++)
