@@ -41,11 +41,11 @@ inline bool is_semi_open_file(Board &board, int sq)
   return false;
 }
 
-inline bool is_semi_open_file(Board &board, u64 file)
+inline bool is_semi_open_file(Board &board, u64 file, bool white)
 {
-  if ((board.bitboards[wPawn] & file) == 0)
+  if (((board.bitboards[wPawn] & file) == 0) && white)
     return true;
-  if ((board.bitboards[bPawn] & file) == 0)
+  if (((board.bitboards[bPawn] & file) == 0) && !white)
     return true;
   return false;
 }

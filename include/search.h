@@ -49,7 +49,7 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
   for (int i = 1; i <= max_depth; i++)
   {
     Move m = root_negamax(board, move_gen, i, stop_flag);
-    if (!stop_flag.load())
+    if (i == 1 || !stop_flag.load())
     {
       best_move = m;
       depth_search = i;

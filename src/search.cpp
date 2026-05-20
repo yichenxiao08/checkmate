@@ -110,6 +110,7 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
 
   // recursive call
   Move quiets_searched[218];
+  Piece quiets_pieces[218];
   int quiets_count = 0;
   for (int i = 0; i < move_gen.move_lists[ply].count; i++)
   {
@@ -125,8 +126,9 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     std::swap(move_gen.move_lists[ply].moves[i], move_gen.move_lists[ply].moves[best]);
 
     Move m = move_gen.move_lists[ply].moves[i];
+    Piece piece_moved = board.squares[m.from];
     board.make_move(m);
-    
+
     if (move_gen.is_in_check(board, !board.is_white_to_move()))
     {
       board.unmake_move(m);
@@ -167,16 +169,17 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     }
     if (score >= beta)
     {
-      if (!move_is_capture)
+      if (!move_is_capture && m.promotion_piece == EMPTY)
       {
         killer_table[1][ply] = killer_table[0][ply];
         killer_table[0][ply] = m;
         int bonus = 300 * depth - 250;
-        history_table[board.squares[m.to]][m.to] += bonus;
-        history_table[board.squares[m.to]][m.to] = std::clamp(history_table[board.squares[m.to]][m.to], -30000, 30000);
+        int &hm = history_table[piece_moved][m.to];
+        hm += bonus;
+        hm = std::clamp(hm, -30000, 30000);
         for (int q = 0; q < quiets_count; q++)
         {
-          int &h = history_table[board.squares[quiets_searched[q].from]][quiets_searched[q].to];
+          int &h = history_table[quiets_pieces[q]][quiets_searched[q].to];
           h -= bonus;
           h = std::clamp(h, -30000, 30000);
         }
@@ -187,6 +190,7 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     if (!move_is_capture && m.promotion_piece == EMPTY)
     {
       quiets_searched[quiets_count] = m;
+      quiets_pieces[quiets_count] = piece_moved;
       quiets_count++;
     }
     board.unmake_move(m);
@@ -223,7 +227,7 @@ Move root_negamax(Board &board, MoveGenerator &move_gen, int depth, std::atomic<
   move_gen.generate_moves(board, 0);
   for (int i = 0; i < move_gen.move_lists[0].count; i++)
   {
-    if (stop_flag.load(std::memory_order_relaxed))
+    if (best_score > -INF && stop_flag.load(std::memory_order_relaxed))
       break;
     Move m = move_gen.move_lists[0].moves[i];
     board.make_move(m);
@@ -325,7 +329,7 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
       std::swap(move_gen.move_lists[ply].moves[i], move_gen.move_lists[ply].moves[best]);
 
       Move m = move_gen.move_lists[ply].moves[i];
-      int captured_val = piece_vals[board.squares[m.to]];
+      int captured_val = m.is_en_passant ? piece_vals[wPawn] : piece_vals[board.squares[m.to]];
       if (m.promotion_piece == EMPTY && stand_pat + captured_val + 200 < alpha)
         continue;
       board.make_move(m);
