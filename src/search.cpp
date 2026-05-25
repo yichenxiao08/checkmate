@@ -48,8 +48,10 @@ int mvv_lva(Piece attack, Piece victim) { return (piece_vals[victim] - piece_val
 
 int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int depth, int ply, bool can_null, std::atomic<bool> &stop_flag)
 {
-  if(board.half_move_count >= 100) return 0;
-  if(ply > 0 && is_repetition(board)) return 0;
+  if (board.half_move_count >= 100)
+    return 0;
+  if (ply > 0 && is_repetition(board))
+    return 0;
 
   int original_alpha = alpha;
   Move best_move;
@@ -81,6 +83,16 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
 
   if (stop_flag.load(std::memory_order_relaxed))
     return 0;
+
+  // static null move pruning
+  if (!is_in_check && depth <= 8)
+  {
+    int margin = 80 * depth;
+    if (static_eval >= beta + margin)
+    {
+      return static_eval;
+    }
+  }
 
   // null move pruning
   if (!is_in_check && depth >= 3 && (beta < MATE_THRESHOLD - 256 || beta > MATE_THRESHOLD) && board.has_piece_material() && can_null)
@@ -143,19 +155,34 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     bool is_killer = board.is_same_move(m, killer_table[0][ply]) || board.is_same_move(m, killer_table[1][ply]);
     bool reducible = (i >= LMR_MIN_INDEX) && (depth >= LMR_MIN_DEPTH) && !move_is_check && !is_in_check && !move_is_capture && m.promotion_piece == EMPTY && !is_killer;
 
-    if (reducible)
+    if (i == 0)
     {
-      int R = 1 + (depth / 3) + (i / 6);
-      R = std::min(R, depth - 1);
-      score = -negamax(board, move_gen, -alpha - 1, -alpha, depth - 1 - R, ply + 1, true, stop_flag);
-      if (score > alpha)
-      {
-        score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true, stop_flag);
-      }
+      score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true, stop_flag);
     }
     else
     {
-      score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true, stop_flag);
+      if (reducible)
+      {
+        int R = 1 + (depth / 3) + (i / 6);
+        R = std::min(R, depth - 1);
+        score = -negamax(board, move_gen, -alpha - 1, -alpha, depth - 1 - R, ply + 1, true, stop_flag);
+        if (score > alpha)
+        {
+          score = -negamax(board, move_gen, -alpha - 1, -alpha, depth - 1, ply + 1, true, stop_flag);
+          if (score > alpha)
+          {
+            score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true, stop_flag);
+          }
+        }
+      }
+      else
+      {
+        score = -negamax(board, move_gen, -alpha - 1, -alpha, depth - 1, ply + 1, true, stop_flag);
+        if (score > alpha)
+        {
+          score = -negamax(board, move_gen, -beta, -alpha, depth - 1, ply + 1, true, stop_flag);
+        }
+      }
     }
 
     if (score > greatest_value)

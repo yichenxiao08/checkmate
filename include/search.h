@@ -18,10 +18,12 @@ void reset_tt();
 inline bool is_repetition(const Board &board)
 {
   int stop = repetition_count - 1 - board.half_move_count;
-  if (stop < 0) stop = 0;
+  if (stop < 0)
+    stop = 0;
   for (int i = repetition_count - 3; i >= stop; i -= 2)
   {
-    if (repetition_table[i] == board.hash) return true;
+    if (repetition_table[i] == board.hash)
+      return true;
   }
   return false;
 }
@@ -45,7 +47,7 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
 
 inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_depth, std::atomic<bool> &stop_flag, int &depth_search, std::chrono::steady_clock::time_point start, int soft_limit)
 {
-  Move best_move;
+  Move best_move = Move(false, true);
   for (int i = 1; i <= max_depth; i++)
   {
     Move m = root_negamax(board, move_gen, i, stop_flag);
@@ -55,8 +57,10 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
       depth_search = i;
     }
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - start).count();
-    if (elapsed >= soft_limit){
+                       std::chrono::steady_clock::now() - start)
+                       .count();
+    if (elapsed >= soft_limit)
+    {
       break;
     }
     for (int p = 0; p < 12; p++)
