@@ -16,10 +16,13 @@ void reset_killer_table();
 void reset_history_table();
 void reset_tt();
 
-struct RootReturn {
+inline int aspiration_bonuses[] = {25, 75};
+
+struct RootReturn
+{
   Move move;
   int score;
-  RootReturn(Move move, int score) : move(move), score(score){};
+  RootReturn(Move move, int score) : move(move), score(score) {};
 };
 
 inline bool is_repetition(const Board &board)
@@ -55,9 +58,39 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
 inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_depth, std::atomic<bool> &stop_flag, int &depth_search, std::chrono::steady_clock::time_point start, int soft_limit)
 {
   Move best_move = Move(false, true);
+  int last_eval = 0;
   for (int i = 1; i <= max_depth; i++)
   {
-    RootReturn root = root_negamax(board, move_gen, -INF, INF, i, stop_flag);
+    RootReturn root = RootReturn(Move(false, true), 0);
+    if (i == 1)
+    {
+      root = root_negamax(board, move_gen, -INF, INF, i, stop_flag);
+    }
+    else
+    {
+      int fail_low_count = 0;
+      int fail_high_count = 0;
+      bool aspiration_success = false;
+      while (fail_low_count < 2 && fail_high_count < 2)
+      {
+        root = root_negamax(board, move_gen, last_eval - aspiration_bonuses[fail_low_count], last_eval + aspiration_bonuses[fail_high_count], i, stop_flag);
+        if (stop_flag.load(std::memory_order_relaxed))
+          break;
+        if (root.score < last_eval - aspiration_bonuses[fail_low_count])
+          fail_low_count++;
+        else if (root.score >= last_eval + aspiration_bonuses[fail_high_count])
+          fail_high_count++;
+        else
+        {
+          aspiration_success = true;
+          break;
+        }
+      }
+      if (!aspiration_success && !stop_flag.load(std::memory_order_relaxed))
+      {
+        root = root_negamax(board, move_gen, -INF, INF, i, stop_flag);
+      }
+    }
     if (i == 1 || !stop_flag.load())
     {
       best_move = root.move;
@@ -77,6 +110,8 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
         history_table[p][s] /= 2;
       }
     }
+    if (i == 1 || !stop_flag.load())
+      last_eval = root.score;
   }
   return best_move;
 }
