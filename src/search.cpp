@@ -3,7 +3,6 @@
 #include "evaluation.h"
 #include <climits>
 #include <atomic>
-#include <algorithm>
 
 Move killer_table[2][256];
 int history_table[12][64];

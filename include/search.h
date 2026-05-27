@@ -6,6 +6,7 @@
 #include "types.h"
 #include <atomic>
 #include <chrono>
+#include <algorithm>
 
 extern Move killer_table[2][256];
 extern int history_table[12][64];
@@ -62,7 +63,7 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
   for (int i = 1; i <= max_depth; i++)
   {
     RootReturn root = RootReturn(Move(false, true), 0);
-    if (i == 1)
+    if (i == 1 || std::abs(last_eval) >= MATE_THRESHOLD - 1000)
     {
       root = root_negamax(board, move_gen, -INF, INF, i, stop_flag);
     }
@@ -76,7 +77,7 @@ inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_d
         root = root_negamax(board, move_gen, last_eval - aspiration_bonuses[fail_low_count], last_eval + aspiration_bonuses[fail_high_count], i, stop_flag);
         if (stop_flag.load(std::memory_order_relaxed))
           break;
-        if (root.score < last_eval - aspiration_bonuses[fail_low_count])
+        if (root.score <= last_eval - aspiration_bonuses[fail_low_count])
           fail_low_count++;
         else if (root.score >= last_eval + aspiration_bonuses[fail_high_count])
           fail_high_count++;

@@ -1,6 +1,5 @@
 #include "evaluation.h"
 #include "bitboardMasks.h"
-#include <algorithm>
 
 const int opening_passed_pawn_bonuses[] = {0, 5, 10, 20, 35, 50, 60};
 const int end_passed_pawn_bonuses[] = {0, 15, 15, 25, 40, 70, 120};
