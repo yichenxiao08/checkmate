@@ -1,6 +1,11 @@
 #pragma once
-#include <bits/stdc++.h>
+#include <string>
+#include <iostream>
+#include <sstream>
 #include <cstdlib>
+#include <atomic>
+#include <vector>
+#include <thread>
 #include "square.h"
 #include "types.h"
 #include "board.h"
