@@ -1,5 +1,6 @@
 #include "search.h"
 #include "transposition.h"
+#include "evalConstants.h"
 #include "evaluation.h"
 #include <climits>
 #include <atomic>
@@ -8,6 +9,9 @@ Move killer_table[2][256];
 int history_table[12][64];
 u64 repetition_table[1024];
 int repetition_count = 0;
+
+const int GOOD_CAPTURE = 1000000;
+const int BAD_CAPTURE = -1000000;
 
 void reset_killer_table()
 {
@@ -29,11 +33,17 @@ void reset_tt()
     table[i] = HashEntry{};
 }
 
-int score_move(Board &board, Move m, int ply)
+int score_move(Board &board, Move m, int ply, MoveGenerator &mg)
 {
   if (board.squares[m.to] != EMPTY)
   {
-    return mvv_lva(board.squares[m.from], board.squares[m.to]);
+    int score = see_capture(board, m, board.is_white_to_move(), mg);
+    if (score < 0)
+      return BAD_CAPTURE + mvv_lva(board.squares[m.from], board.squares[m.to]);
+    else if (score > 0)
+      return GOOD_CAPTURE + mvv_lva(board.squares[m.from], board.squares[m.to]);
+    else
+      return mvv_lva(board.squares[m.from], board.squares[m.to]);
   }
   if (board.is_same_move(m, killer_table[0][ply]))
     return 90000;
@@ -115,7 +125,7 @@ int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int dept
     if (board.is_same_move(move_gen.move_lists[ply].moves[i], entry_move))
       scores[i] = INT_MAX;
     else
-      scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply);
+      scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply, move_gen);
   }
 
   // recursive call
@@ -279,7 +289,7 @@ RootReturn root_negamax(Board &board, MoveGenerator &move_gen, int alpha, int be
       move_scores[i] = INT_MAX;
     }
     else
-      move_scores[i] = score_move(board, move_gen.move_lists[0].moves[i], 0);
+      move_scores[i] = score_move(board, move_gen.move_lists[0].moves[i], 0, move_gen);
   }
 
   for (int i = 0; i < move_gen.move_lists[0].count; i++)
@@ -380,7 +390,7 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
       if (board.is_same_move(move_gen.move_lists[ply].moves[i], entry_move))
         scores[i] = INT_MAX;
       else
-        scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply);
+        scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply, move_gen);
     }
 
     for (int i = 0; i < move_gen.move_lists[ply].count; i++)
@@ -438,7 +448,7 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
       if (board.is_same_move(move_gen.move_lists[ply].moves[i], entry_move))
         scores[i] = INT_MAX;
       else
-        scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply);
+        scores[i] = score_move(board, move_gen.move_lists[ply].moves[i], ply, move_gen);
     }
 
     for (int i = 0; i < move_gen.move_lists[ply].count; i++)
@@ -490,4 +500,29 @@ int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int p
   }
   store_entry(board.hash, greatest_val, 0, best_move, node_type, ply, static_eval);
   return greatest_val;
+}
+
+int see(Board &board, int square, bool white, MoveGenerator &mg)
+{
+  int value = 0;
+  int smallest_attacker_from = get_smallest_attacker_square(board, square, white, mg);
+  if (smallest_attacker_from != NO_SQUARE)
+  {
+    Move m = Move(smallest_attacker_from, square);
+    board.make_move(m);
+    int captured_val = piece_vals[m.prev_state.captured_piece];
+    value = std::max(0, captured_val - see(board, square, !white, mg));
+    board.unmake_move(m);
+  }
+  return value;
+}
+
+int see_capture(Board &board, Move m, bool white, MoveGenerator &mg)
+{
+  int value = 0;
+  board.make_move(m);
+  int captured_val = piece_vals[m.prev_state.captured_piece];
+  value = std::max(0, captured_val - see(board, m.to, !white, mg));
+  board.unmake_move(m);
+  return value;
 }

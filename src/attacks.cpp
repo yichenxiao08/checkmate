@@ -39,7 +39,7 @@ void MoveGenerator::precompute_king_attacks()
 }
 void MoveGenerator::precompute_white_pawn_attacks()
 {
-  for (int i = 8; i < 56; i++)
+  for (int i = 0; i < 56; i++)
   {
     u64 pawn_pos = 1ULL << i;
     u64 ne = (pawn_pos << 9) & not_a_file;
@@ -50,7 +50,7 @@ void MoveGenerator::precompute_white_pawn_attacks()
 }
 void MoveGenerator::precompute_black_pawn_attacks()
 {
-  for (int i = 8; i < 56; i++)
+  for (int i = 8; i < 64; i++)
   {
     u64 pawn_pos = 1ULL << i;
     u64 se = (pawn_pos >> 7) & not_a_file;

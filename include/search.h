@@ -50,11 +50,66 @@ RootReturn root_negamax(Board &board, MoveGenerator &move_gen, int alpha, int be
 
 int negamax(Board &board, MoveGenerator &move_gen, int alpha, int beta, int depth, int ply, bool can_null, std::atomic<bool> &stop_flag);
 
-int score_move(Board &board, Move m, int ply);
+int score_move(Board &board, Move m, int ply, MoveGenerator &mg);
 
 int mvv_lva(Piece attack, Piece victim);
 
 int quiescence(Board &board, MoveGenerator &move_gen, int alpha, int beta, int ply, int static_eval, int depth, std::atomic<bool> &stop_flag);
+
+int see(Board &board, int square, bool white, MoveGenerator &mg);
+
+int see_capture(Board &board, Move m, bool white, MoveGenerator &mg);
+
+inline int get_smallest_attacker_square(Board &board, int square, bool white, MoveGenerator &mg){
+  u64 pawns = white ? board.bitboards[wPawn] : board.bitboards[bPawn];
+  u64 attack_from_square = white ? mg.black_pawn_attack_table[square] : mg.white_pawn_attack_table[square];
+  u64 possible_attackers = pawns & attack_from_square;
+  if(possible_attackers){
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  u64 knights = white ? board.bitboards[wKnight] : board.bitboards[bKnight];
+  attack_from_square = mg.knight_attack_table[square];
+  possible_attackers = knights & attack_from_square;
+  if (possible_attackers)
+  {
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  u64 bishops = white ? board.bitboards[wBishop] : board.bitboards[bBishop];
+  attack_from_square = mg.get_bishop_attacks(square, board);
+  possible_attackers = bishops & attack_from_square;
+  if (possible_attackers)
+  {
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  u64 rooks = white ? board.bitboards[wRook] : board.bitboards[bRook];
+  attack_from_square = mg.get_rook_attacks(square, board);
+  possible_attackers = rooks & attack_from_square;
+  if (possible_attackers)
+  {
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  u64 queens = white ? board.bitboards[wQueen] : board.bitboards[bQueen];
+  attack_from_square = mg.get_queen_attacks(square, board);
+  possible_attackers = queens & attack_from_square;
+  if (possible_attackers)
+  {
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  u64 king = white ? board.bitboards[wKing] : board.bitboards[bKing];
+  attack_from_square = mg.king_attack_table[square];
+  possible_attackers = king & attack_from_square;
+  if (possible_attackers)
+  {
+    return __builtin_ctzll(possible_attackers);
+  }
+
+  return NO_SQUARE;
+}
 
 inline Move iterative_deepening(Board &board, MoveGenerator &move_gen, int max_depth, std::atomic<bool> &stop_flag, int &depth_search, std::chrono::steady_clock::time_point start, int soft_limit)
 {
