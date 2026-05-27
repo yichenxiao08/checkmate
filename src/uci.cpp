@@ -11,7 +11,7 @@
 
 void uci_loop(Board &board, MoveGenerator &mg)
 {
-  std::atomic<bool> stop_flag = false;
+  std::atomic<bool> stop_flag{false};
   std::thread search_thread;
 
   std::string cmd;
