@@ -46,3 +46,7 @@ SixSeven is live on lichess.org, a global platform used to play chess against ot
 3. Search up sixseven08. This should navigate you to its account page, marked with a purple BOT flag
 4. Create a new challenge by clicking "challenge". Ensure to select the real time mode, as it does not support unlimited time control. Also make sure the standard FIDE rules are selected.
 5. Enjoy!
+
+## Note about AI usage
+
+AI was used to help me understand some key concepts better, as well as create testing environments early on in the development process and debug minor issues with cross-platform compatability. However, the core functionalities were all implemented by me.
