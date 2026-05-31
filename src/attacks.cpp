@@ -127,7 +127,7 @@ void MoveGenerator::precompute_rook_attacks()
     {
       u64 attacks = calculate_rook_attacks(i, subset);
       u64 index = (subset * rook_magic[i]) >> (64 - rook_shifts[i]);
-      rook_attack_table[i][index] = attacks;
+      rook_attacks[i][index] = attacks;
       subset = (subset - mask) & mask;
     } while (subset != 0);
   }
@@ -143,7 +143,7 @@ void MoveGenerator::precompute_bishop_attacks()
     {
       u64 attacks = calculate_bishop_attacks(i, subset);
       u64 index = (subset * bishop_magic[i]) >> (64 - bishop_shifts[i]);
-      bishop_attack_table[i][index] = attacks;
+      bishop_attacks[i][index] = attacks;
       subset = (subset - mask) & mask;
     } while (subset != 0);
   }
@@ -218,16 +218,15 @@ u64 MoveGenerator::calculate_bishop_attacks(int sq, u64 blockers)
 }
 u64 MoveGenerator::get_rook_attacks(int sq, Board &board)
 {
-  u64 blockers = (board.white_pieces | board.black_pieces) & rook_masks[sq];
+  u64 blockers = board.occupied_squares & rook_masks[sq];
   u64 index = (blockers * rook_magic[sq]) >> (64 - rook_shifts[sq]);
-  u64 max_index = 1ULL << rook_shifts[sq];
-  return rook_attack_table[sq][index];
+  return rook_attacks[sq][index];
 }
 u64 MoveGenerator::get_bishop_attacks(int sq, Board &board)
 {
-  u64 blockers = (board.white_pieces | board.black_pieces) & bishop_masks[sq];
+  u64 blockers = board.occupied_squares & bishop_masks[sq];
   u64 index = (blockers * bishop_magic[sq]) >> (64 - bishop_shifts[sq]);
-  return bishop_attack_table[sq][index];
+  return bishop_attacks[sq][index];
 }
 u64 MoveGenerator::get_queen_attacks(int sq, Board &board)
 {

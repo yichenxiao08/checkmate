@@ -1,8 +1,21 @@
 #include "moveGen.h"
 #include "board.h"
+#include "magics.h"
 
 MoveGenerator::MoveGenerator()
 {
+  int rook_offset = 0;
+  for(int i = 0;i<64;i++){
+    rook_attacks[i] = rook_pool + rook_offset;
+    rook_offset += (1 << rook_shifts[i]);
+  }
+
+  int bishop_offset = 0;
+  for(int i = 0;i<64;i++){
+    bishop_attacks[i] = bishop_pool + bishop_offset;
+    bishop_offset += (1 << bishop_shifts[i]);
+  }
+
   init();
 }
 

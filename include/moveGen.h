@@ -13,8 +13,10 @@ public:
   MoveGenerator();
   u64 knight_attack_table[64];
   u64 king_attack_table[64];
-  u64 rook_attack_table[64][4096];
-  u64 bishop_attack_table[64][512];
+  u64* rook_attacks[64];
+  u64* bishop_attacks[64];
+  u64 rook_pool[102400];
+  u64 bishop_pool[5248];
   u64 rook_masks[64];
   u64 bishop_masks[64];
   u64 white_pawn_attack_table[64];
@@ -32,7 +34,7 @@ public:
   u64 get_rook_attacks(int sq, Board &board);
   u64 get_bishop_attacks(int sq, Board &board);
   u64 get_queen_attacks(int sq, Board &board);
-  void init()
+  inline void init()
   {
     precompute_knight_attacks();
     precompute_king_attacks();
@@ -47,7 +49,7 @@ public:
   void generate_rook_moves(Board &board);
   void generate_bishop_moves(Board &board);
   void generate_queen_moves(Board &board);
-  void add_move(Move m)
+  void add_move(const Move &m)
   {
     move_lists[current_ply].moves[move_lists[current_ply].count++] = m;
   }

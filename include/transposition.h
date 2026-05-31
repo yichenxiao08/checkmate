@@ -4,7 +4,7 @@
 #include "searchConstants.h"
 #include <climits>
 
-const int table_size = 1 << 20;
+const int table_size = 1 << 22;
 const int pawn_table_size = 1 << 16;
 const int NO_EVAL = INT_MIN;
 

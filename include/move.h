@@ -19,6 +19,9 @@ struct Undo
   int prev_phase;
   bool prev_white_castled;
   bool prev_black_castled;
+  u64 prev_white_pieces;
+  u64 prev_black_pieces;
+  u64 prev_occupied_squares;
   Undo() = default;
   Undo(u64 hash, u64 pawns_hash, int castling, int ep, int count, Piece captured, bool white, int op_material, int op_psqt, int ed_material, int ed_psqt, int phase, bool white_castled, bool black_castled) : hash(hash), pawns_hash(pawns_hash), castling_rights(castling), en_passant_square(ep), half_move_count(count), captured_piece(captured), white_to_move(white), prev_opening_material(op_material), prev_opening_psqt(op_psqt), prev_end_material(ed_material), prev_end_psqt(ed_psqt), prev_phase(phase), prev_white_castled(white_castled), prev_black_castled(black_castled){};
 };

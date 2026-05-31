@@ -6,6 +6,9 @@
 void Board::make_move(Move &m, Undo &prev_state)
 {
   prev_state = Undo{hash, pawns_hash, castling_rights, en_passant_square, half_move_count, squares[m.to], white_to_move, opening_material, opening_psqt, end_material, end_psqt, phase, white_castled, black_castled};
+  prev_state.prev_white_pieces = white_pieces;
+  prev_state.prev_black_pieces = black_pieces;
+  prev_state.prev_occupied_squares = occupied_squares;
 
   hash ^= castling_randoms[castling_rights];
   if (en_passant_square != NO_SQUARE)

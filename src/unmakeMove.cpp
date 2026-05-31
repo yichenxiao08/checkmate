@@ -96,7 +96,9 @@ void Board::unmake_move(Move &m, Undo &prev_state)
     squares[m.to] = prev_state.captured_piece;
   }
 
-  update_position();
+  white_pieces = prev_state.prev_white_pieces;
+  black_pieces = prev_state.prev_black_pieces;
+  occupied_squares = prev_state.prev_occupied_squares;
 }
 
 void Board::unmake_null_move(Undo &undo_null){
