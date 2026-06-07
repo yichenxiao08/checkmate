@@ -43,7 +43,7 @@ Checkmate is live on lichess.org, a global platform used to play chess against o
 
 1. Go to lichess.org
 2. Login to your account/register a new account
-3. Search up Checkmate08. This should navigate you to its account page, marked with a purple BOT flag
+3. Search up sixseven08. This should navigate you to its account page, marked with a purple BOT flag
 4. Create a new challenge by clicking "challenge". Ensure to select the real time mode, as it does not support unlimited time control. Also make sure the standard FIDE rules are selected.
 5. Enjoy!
 
