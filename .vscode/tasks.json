@@ -25,6 +25,10 @@
         "src/zobrist.cpp",
         "src/evaluation.cpp",
         "src/uci.cpp",
+        "src/matrix.cpp",
+        "src/layer.cpp",
+        "src/network.cpp",
+        "src/activations.cpp",
         "-o",
         "${workspaceFolder}/app.exe"
       ],

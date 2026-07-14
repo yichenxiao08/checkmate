@@ -1,12 +1,14 @@
 #include "network.h"
-
+#include "activations.h"
 Network::Network(std::vector<int> layer_sizes)
 {
   this->input_size = layer_sizes[0];
   int last_input_size = layer_sizes[0];
   for (int i = 1; i < layer_sizes.size(); i++)
   {
-    this->layers.push_back(Layer(last_input_size, layer_sizes[i]));
+    float (*activation)(float) = i == layer_sizes.size() - 1 ? identity : relu; 
+    float (*activation_derivative)(float) = i == layer_sizes.size() - 1 ? identity_derivative : relu_derivative; 
+    this->layers.push_back(Layer(last_input_size, layer_sizes[i], activation, activation_derivative));
     last_input_size = layer_sizes[i];
   }
 }

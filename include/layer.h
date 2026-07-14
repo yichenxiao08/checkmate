@@ -4,6 +4,10 @@
 struct Layer {
   int input_size;
   int output_size;
+
+  float (*activation)(float);
+  float (*activation_derivative)(float);
+
   Matrix weights;
   Matrix bias;
 
@@ -14,7 +18,7 @@ struct Layer {
   Matrix grad_weights;
   Matrix grad_bias;
 
-  Layer(int input, int output);
+  Layer(int input, int output, float (*activation)(float), float (*activation_derivative)(float));
   Matrix forward(const Matrix& input);
   Matrix backward(const Matrix& gradient);
 
