@@ -29,6 +29,7 @@
         "src/layer.cpp",
         "src/network.cpp",
         "src/activations.cpp",
+        "src/nnue.cpp",
         "-o",
         "${workspaceFolder}/app.exe"
       ],

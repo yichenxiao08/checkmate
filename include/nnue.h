@@ -1,5 +1,15 @@
 #pragma once
 #include "board.h"
-#include "matrix.h"
+#include "network.h"
 
-Matrix encode_position(Board& board);
+#define INPUT_SIZE 768
+#define HL_SIZE 3072
+
+class NNUE
+{
+public:
+  NNUE();
+  Network network;
+  Matrix encode_position(Board &board, bool white);
+  void evaluate(Board &board);
+};

@@ -14,4 +14,5 @@ struct Matrix
   Matrix elementwise_multiply(const Matrix &other) const;
   Matrix apply(float (*func)(float)) const;
   Matrix scale(float f) const;
+  static Matrix concatenate(const Matrix& x, const Matrix& y) ;
 };

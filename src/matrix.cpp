@@ -106,3 +106,17 @@ Matrix Matrix::scale(float f) const
   }
   return result;
 }
+
+Matrix Matrix::concatenate(const Matrix& x, const Matrix& y)
+{
+  Matrix result(x.rows + y.rows, 1);
+  for (int i = 0; i < x.rows; i++)
+  {
+    result.at(i, 0) = x.at(i, 0);
+  }
+  for (int i = 0; i < y.rows; i++)
+  {
+    result.at(i + x.rows, 0) = y.at(i, 0);
+  }
+  return result;
+}
